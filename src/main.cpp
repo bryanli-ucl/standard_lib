@@ -9,9 +9,6 @@
 #include "msd/array.hpp"
 #include "msd/queue.hpp"
 
-void setup() {
-    msd::array<int, 10> arr;
-    arr.fill(0);
-}
+void setup() {}
 
 void loop() {}

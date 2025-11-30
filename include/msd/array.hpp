@@ -12,6 +12,17 @@ class array {
     private:
     data_t _data[N];
 
+    void initializer(size_t index) {
+        for (; index < N; index++) _data[index] = data_t{};
+    }
+
+    template <typename M, typename... Args>
+    void initializer(size_t index, M val, Args... args) {
+        if (index >= N) return;
+        _data[index] = static_cast<data_t>(val);
+        initializer(index + 1, args...);
+    }
+
     public:
     array() : _data{} {}
 
@@ -26,11 +37,10 @@ class array {
         return _data[index];
     }
 
-    data_t& at(size_t p) {
-        return _data[p];
-    }
-
     const data_t& at(size_t p) const {
+        if (p >= N) {
+            p = N - 1;
+        }
         return _data[p];
     }
 
@@ -64,6 +74,10 @@ class array {
 
     bool operator!=(const array& other) {
         return (*this == other);
+    }
+
+    data_t* begin() {
+        return _data;
     }
 };
 
