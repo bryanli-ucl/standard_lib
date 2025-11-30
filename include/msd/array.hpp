@@ -4,10 +4,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "iterator.hpp"
+
 namespace msd {
 template <typename T, size_t N>
 class array {
-    using data_t = T;
+    using data_t   = T;
+    using data_ptr = T*;
+    using data_ref = T&;
 
     private:
     data_t _data[N];
@@ -63,6 +67,14 @@ class array {
         return N;
     }
 
+    msd::iterator<data_t> begin() {
+        return iterator{ _data };
+    }
+
+    msd::iterator<data_t> end() {
+        return iterator{ _data + N };
+    }
+
     bool operator==(const array& other) {
         if (other.size() != N) return false;
 
@@ -74,10 +86,6 @@ class array {
 
     bool operator!=(const array& other) {
         return (*this == other);
-    }
-
-    data_t* begin() {
-        return _data;
     }
 };
 

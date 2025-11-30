@@ -8,7 +8,9 @@ namespace msd {
 
 template <typename T>
 class queue {
-    using data_t = T;
+    using data_t   = T;
+    using data_ptr = T*;
+    using data_ref = T&;
 
     private:
     data_t* _data;
@@ -20,10 +22,9 @@ class queue {
     size_t _tail;
 
     void resize(size_t cap) {
-        if (cap == _capacity)
-            return;
+        if (cap == _capacity) return;
 
-        data_t* ndata = new data_t[cap];
+        data_ptr ndata = new data_t[cap];
         for (size_t i = 0; i < _size; i++) {
             ndata[i] = _data[(_head + i) % _capacity];
         }
@@ -55,8 +56,7 @@ class queue {
     }
 
     queue& operator=(const queue& other) {
-        if (this == &other)
-            return *this;
+        if (this == &other) return *this;
 
         delete[] _data;
         _capacity = other.capacity;
@@ -75,8 +75,7 @@ class queue {
     }
 
     void push_front(data_t val) {
-        if (full())
-            resize(_capacity * 2);
+        if (full()) resize(_capacity * 2);
 
         _head        = ((_head - 1) + _capacity) % _capacity;
         _data[_head] = val;
@@ -84,8 +83,7 @@ class queue {
     }
 
     void push_back(data_t val) {
-        if (full())
-            resize(_capacity * 2);
+        if (full()) resize(_capacity * 2);
 
         _data[_tail] = val;
         _tail        = (_tail + 1) % _capacity;
@@ -93,16 +91,14 @@ class queue {
     }
 
     void pop_front() {
-        if (empty())
-            return;
+        if (empty()) return;
 
         _head = (_head + 1) % _capacity;
         _size--;
     }
 
     void pop_back() {
-        if (empty())
-            return;
+        if (empty()) return;
 
         _tail = (_tail - 1) % _capacity;
         _size--;

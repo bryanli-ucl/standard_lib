@@ -29,10 +29,20 @@ void test_array_fill() {
     }
 }
 
-void test_array_args_initialize() {
+void test_array_args_init() {
     array<int, 5> arr(1, 2, 3, 4, 5);
     for (size_t i = 0; i < arr.size(); i++) {
         TEST_ASSERT_EQUAL(i + 1, arr[i]);
+    }
+}
+
+void test_array_iterator() {
+    auto arr = msd::make_array(1, 2, 3, 4, 5);
+    size_t i = 1;
+
+    for (const auto& x : arr) {
+        TEST_ASSERT_EQUAL(x, i);
+        i++;
     }
 }
 
