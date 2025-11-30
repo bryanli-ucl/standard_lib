@@ -1,6 +1,6 @@
 #include <unity.h>
 
-#include "msd/array.hpp"
+#include <array.hpp>
 
 using msd::array;
 

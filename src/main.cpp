@@ -6,8 +6,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "msd/array.hpp"
-#include "msd/queue.hpp"
+#include "array.hpp"
+#include "queue.hpp"
 
 void setup() {}
 
