@@ -8,6 +8,7 @@
 
 #include "array.hpp"
 #include "queue.hpp"
+#include "vector.hpp"
 
 void setup() {}
 

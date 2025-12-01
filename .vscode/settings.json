@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.cc": "c",
+        "*.asm": "platformio-debug.asm",
+        "new": "cpp"
+    }
+}

@@ -15,51 +15,45 @@ class iterator {
     data_ptr _ptr;
 
     public:
-    iterator(data_ptr ptr = nullptr) : _ptr(ptr) {}
-    iterator(const iterator& other) : _ptr(other._ptr) {}
-    iterator& operator=(const iterator& other) {
+    iterator(data_ptr ptr = nullptr) noexcept
+    : _ptr(ptr) {}
+    iterator(const iterator& other) noexcept
+    : _ptr(other._ptr) {}
+    virtual ~iterator() = default;
+
+    iterator& operator=(const iterator& other) noexcept {
         if (this != &other) _ptr = other._ptr;
         return *this;
     }
 
     // itor . / ->
-    data_ref operator*() const {
-        return *_ptr;
-    }
-    data_ptr operator->() const {
-        return _ptr;
-    }
+    data_ref operator*() const noexcept { return *_ptr; }
+    data_ptr operator->() const noexcept { return _ptr; }
+
+    // itor ==/!= itor
+    bool operator==(const iterator& other) noexcept { return _ptr == other._ptr; }
+    bool operator!=(const iterator& other) noexcept { return _ptr != other._ptr; }
 
     // itor ++/-- (prefix)
-    iterator& operator++() {
+    iterator& operator++() noexcept {
         ++_ptr;
         return *this;
     }
-    iterator& operator--() {
+    iterator& operator--() noexcept {
         --_ptr;
         return *this;
     }
 
     // itor ++/-- (suffix)
-    iterator operator++(int) {
+    iterator operator++(int) noexcept {
         iterator tmp{ *this };
         ++_ptr;
         return tmp;
     }
-    iterator operator--(int) {
+    iterator operator--(int) noexcept {
         iterator tmp{ *this };
         --_ptr;
         return tmp;
     }
-
-    // itor ==/!= itor
-    bool operator==(const iterator& other) {
-        return _ptr == other._ptr;
-    }
-    bool operator!=(const iterator& other) {
-        return _ptr != other._ptr;
-    }
-
-    ~iterator() = default;
 };
 } // namespace msd

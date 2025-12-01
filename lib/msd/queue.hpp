@@ -44,6 +44,8 @@ class queue {
         _tail     = 0;
     }
 
+    virtual ~queue() { delete[] _data; }
+
     queue(const queue& other) {
         _capacity = other._capacity;
         _size     = other._size;
@@ -59,7 +61,7 @@ class queue {
         if (this == &other) return *this;
 
         delete[] _data;
-        _capacity = other.capacity;
+        _capacity = other._capacity;
         _size     = other._size;
         _head     = other._head;
         _tail     = other._tail;
@@ -68,10 +70,6 @@ class queue {
             _data[i] = other._data[i];
         }
         return *this;
-    }
-
-    ~queue() {
-        delete[] _data;
     }
 
     void push_front(data_t val) {
@@ -104,35 +102,15 @@ class queue {
         _size--;
     }
 
-    data_t& front() const {
-        return _data[_head];
-    }
+    data_t& front() const { return _data[_head]; }
+    data_t& back() const { return _data[((_tail - 1) + _capacity) % _capacity]; }
 
-    data_t& back() const {
-        return _data[((_tail - 1) + _capacity) % _capacity];
-    }
+    void clear() { _tail = 0, _head = 0, _size = 0; }
+    bool empty() const { return _size == 0; }
+    bool full() const { return _size == _capacity; }
 
-    bool empty() const {
-        return _size == 0;
-    }
-
-    bool full() const {
-        return _size == _capacity;
-    }
-
-    void clear() {
-        _tail = 0;
-        _head = 0;
-        _size = 0;
-    }
-
-    size_t capacity() const {
-        return _capacity;
-    }
-
-    size_t size() const {
-        return _size;
-    }
+    size_t capacity() const { return _capacity; }
+    size_t size() const { return _size; }
 };
 
 } // namespace msd

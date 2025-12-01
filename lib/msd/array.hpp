@@ -16,49 +16,26 @@ class array {
     private:
     data_t _data[N];
 
-    void initializer(size_t index) {
-        for (; index < N; index++) _data[index] = data_t{};
-    }
-
-    template <typename M, typename... Args>
-    void initializer(size_t index, M val, Args... args) {
-        if (index >= N) return;
-        _data[index] = static_cast<data_t>(val);
-        initializer(index + 1, args...);
-    }
-
     public:
-    array() : _data{} {}
+    array()
+    : _data{} {}
 
     template <typename... Args>
-    array(Args... args) {
-        initializer(0, args...);
-    }
+    array(Args... args) { initializer(0, args...); }
 
-    ~array() = default;
+    virtual ~array() = default;
 
-    data_t& operator[](const size_t index) {
-        return _data[index];
-    }
+    const data_t& at(size_t p) const { return _data[p >= N ? N - 1 : p]; }
+    data_t& at(size_t p) { return _data[p >= N ? N - 1 : p]; }
+    const data_t& operator[](const size_t index) const { return at(index); }
+    data_t& operator[](const size_t index){ return at(index); }
 
-    const data_t& at(size_t p) const {
-        if (p >= N) {
-            p = N - 1;
-        }
-        return _data[p];
-    }
+    msd::iterator<data_t> begin() { return iterator<data_t>{ _data }; }
+    msd::iterator<data_t> end() { return iterator<data_t>{ _data + N }; }
 
-    constexpr size_t size() const {
-        return N;
-    }
-
-    constexpr size_t capacity() const {
-        return N;
-    }
-
-    constexpr bool empty() const {
-        return size() == 0;
-    }
+    constexpr size_t size() const { return N; }
+    constexpr size_t capacity() const { return N; }
+    constexpr bool empty() const { return size() == 0; }
 
     size_t fill(data_t val) {
         for (size_t i = 0; i < N; i++) {
@@ -67,14 +44,7 @@ class array {
         return N;
     }
 
-    msd::iterator<data_t> begin() {
-        return iterator{ _data };
-    }
-
-    msd::iterator<data_t> end() {
-        return iterator{ _data + N };
-    }
-
+    bool operator!=(const array& other) { return (*this == other); }
     bool operator==(const array& other) {
         if (other.size() != N) return false;
 
@@ -84,8 +54,18 @@ class array {
         return true;
     }
 
-    bool operator!=(const array& other) {
-        return (*this == other);
+    private:
+    void initializer(size_t index) {
+        for (; index < N; index++)
+            _data[index] = data_t{};
+    }
+
+    template <typename M, typename... Args>
+    void initializer(size_t index, M val, Args... args) {
+        if (index >= N)
+            return;
+        _data[index] = static_cast<data_t>(val);
+        initializer(index + 1, args...);
     }
 };
 
