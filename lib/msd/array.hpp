@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include "msddef.hpp"
 
 #include "iterator.hpp"
 
@@ -14,24 +12,24 @@ class array {
     using data_ref = T&;
 
     private:
-    data_t _data[N];
+    data_t m_data[N];
 
     public:
     array()
-    : _data{} {}
+    : m_data{} {}
 
     template <typename... Args>
     array(Args... args) { initializer(0, args...); }
 
     virtual ~array() = default;
 
-    const data_t& at(size_t p) const { return _data[p >= N ? N - 1 : p]; }
-    data_t& at(size_t p) { return _data[p >= N ? N - 1 : p]; }
+    const data_t& at(size_t p) const { return m_data[p >= N ? N - 1 : p]; }
+    data_t& at(size_t p) { return m_data[p >= N ? N - 1 : p]; }
     const data_t& operator[](const size_t index) const { return at(index); }
-    data_t& operator[](const size_t index){ return at(index); }
+    data_t& operator[](const size_t index) { return at(index); }
 
-    msd::iterator<data_t> begin() { return iterator<data_t>{ _data }; }
-    msd::iterator<data_t> end() { return iterator<data_t>{ _data + N }; }
+    msd::iterator<data_t> begin() { return iterator<data_t>{ m_data }; }
+    msd::iterator<data_t> end() { return iterator<data_t>{ m_data + N }; }
 
     constexpr size_t size() const { return N; }
     constexpr size_t capacity() const { return N; }
@@ -39,7 +37,7 @@ class array {
 
     size_t fill(data_t val) {
         for (size_t i = 0; i < N; i++) {
-            _data[i] = val;
+            m_data[i] = val;
         }
         return N;
     }
@@ -49,7 +47,7 @@ class array {
         if (other.size() != N) return false;
 
         for (size_t i = 0; i < N; i++) {
-            if (_data[i] != other.at(i)) return false;
+            if (m_data[i] != other.at(i)) return false;
         }
         return true;
     }
@@ -57,14 +55,14 @@ class array {
     private:
     void initializer(size_t index) {
         for (; index < N; index++)
-            _data[index] = data_t{};
+            m_data[index] = data_t{};
     }
 
     template <typename M, typename... Args>
     void initializer(size_t index, M val, Args... args) {
         if (index >= N)
             return;
-        _data[index] = static_cast<data_t>(val);
+        m_data[index] = static_cast<data_t>(val);
         initializer(index + 1, args...);
     }
 };

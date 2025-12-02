@@ -1,10 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include <new>
+#include "msddef.hpp"
 
 #include "iterator.hpp"
 #include "move.hpp"
@@ -17,28 +13,28 @@ class vector {
     using data_ref = T&;
 
     private:
-    data_ptr _data;
-    size_t _size;
+    data_ptr m_data;
+    size_t m_size;
     size_t _capacity;
 
     public:
     // default construction
     constexpr vector() noexcept
-    : _data(nullptr), _size(), _capacity() {}
+    : m_data(nullptr), m_size(), _capacity() {}
 
     // copy construction
     vector(const vector& other) {
-        _data     = static_cast<data_ptr>(::operator new(other._capacity * sizeof(data_t)));
-        _size     = other._size;
+        m_data    = static_cast<data_ptr>(::operator new(other._capacity * sizeof(data_t)));
+        m_size    = other.m_size;
         _capacity = other._capacity;
 
         try {
-            for (size_t i = 0; i < _size; i++)
-                ::new (&_data[i]) data_t(other._data[i]);
+            for (size_t i = 0; i < m_size; i++)
+                ::new (&m_data[i]) data_t(other.m_data[i]);
         } catch (...) {
-            for (size_t i = 0; i < _size; i++)
-                _data[i].~data_t();
-            ::operator delete(_data);
+            for (size_t i = 0; i < m_size; i++)
+                m_data[i].~data_t();
+            ::operator delete(m_data);
             throw;
         }
     }
@@ -52,25 +48,25 @@ class vector {
 
     // move construction
     vector(vector&& other) noexcept {
-        _data     = other._data;
-        _size     = other._size;
+        m_data    = other.m_data;
+        m_size    = other.m_size;
         _capacity = other._capacity;
 
-        other._data     = nullptr;
+        other.m_data    = nullptr;
         other._capacity = 0;
-        other._size     = 0;
+        other.m_size    = 0;
     }
 
     vector& operator=(vector&& other) noexcept {
         if (this != &other) {
             __destory_all();
 
-            _data     = other._data;
-            _size     = other._size;
+            m_data    = other.m_data;
+            m_size    = other.m_size;
             _capacity = other._capacity;
 
-            other._data     = nullptr;
-            other._size     = 0;
+            other.m_data    = nullptr;
+            other.m_size    = 0;
             other._capacity = 0;
         }
         return *this;
@@ -80,43 +76,43 @@ class vector {
 
     // access
     const data_t& at(size_t index) const {
-        if (index >= _size)
+        if (index >= m_size)
             throw;
-        return _data[index];
+        return m_data[index];
     }
     data_t& at(size_t index) {
-        if (index >= _size)
+        if (index >= m_size)
             throw;
-        return _data[index];
+        return m_data[index];
     }
 
     const data_t& operator[](size_t index) const { return at(index); }
     data_t& operator[](size_t index) { return at(index); }
 
     // iterator
-    iterator<data_t> begin() noexcept { return iterator<data_t>{ _data }; }
-    iterator<data_t> end() noexcept { return iterator<data_t>{ _data + _size }; }
+    iterator<data_t> begin() noexcept { return iterator<data_t>{ m_data }; }
+    iterator<data_t> end() noexcept { return iterator<data_t>{ m_data + m_size }; }
 
     // raw data
-    data_t* data() noexcept { return _data; }
-    const data_t* data() const noexcept { return _data; }
+    data_t* data() noexcept { return m_data; }
+    const data_t* data() const noexcept { return m_data; }
 
     // size
-    size_t size() const noexcept { return _size; }
+    size_t size() const noexcept { return m_size; }
     size_t capacity() const noexcept { return _capacity; }
-    bool empty() const noexcept { return _size == 0; }
+    bool empty() const noexcept { return m_size == 0; }
 
     void clear() noexcept {
-        for (size_t i = 0; i < _size; i++)
-            _data[i].~data_t();
-        _size = 0;
+        for (size_t i = 0; i < m_size; i++)
+            m_data[i].~data_t();
+        m_size = 0;
     }
 
     // control
     void pop_back() {
         if (empty()) throw;
-        _data[_size - 1].~data_t();
-        _size--;
+        m_data[m_size - 1].~data_t();
+        m_size--;
     }
 
     void push_back(const data_t& val) { emplace_back(val); }
@@ -124,26 +120,26 @@ class vector {
 
     template <typename... Args>
     data_ref emplace_back(Args&&... args) {
-        if (_size < _capacity) {
-            size_t p = _size;
-            ::new (&_data[p]) data_t(forward<Args>(args)...);
-            _size++;
-            return _data[p];
+        if (m_size < _capacity) {
+            size_t p = m_size;
+            ::new (&m_data[p]) data_t(forward<Args>(args)...);
+            m_size++;
+            return m_data[p];
         }
         size_t n_cap    = (_capacity + 1) | (_capacity >> 1);
         size_t n_size   = 0;
         data_ptr n_data = static_cast<data_ptr>(::operator new(n_cap * sizeof(data_t)));
 
         try {
-            for (size_t i = 0; i < _size; i++) {
-                ::new (&n_data[i]) data_t(move(_data[i]));
+            for (size_t i = 0; i < m_size; i++) {
+                ::new (&n_data[i]) data_t(move(m_data[i]));
                 n_size++;
             }
 
             ::new (&n_data[n_size]) data_t(forward<Args>(args)...);
             n_size++;
         } catch (...) {
-            for (size_t i = 0; i < _size; i++)
+            for (size_t i = 0; i < m_size; i++)
                 n_data[i].~data_t();
 
             if (n_data)
@@ -153,8 +149,8 @@ class vector {
 
         __destory_all();
 
-        _data     = n_data;
-        _size     = n_size;
+        m_data    = n_data;
+        m_size    = n_size;
         _capacity = n_cap;
 
         return n_data[n_size];
@@ -162,23 +158,23 @@ class vector {
 
     private:
     void swap(vector& other) noexcept {
-        data_ptr td = _data;
-        size_t tsz  = _size;
+        data_ptr td = m_data;
+        size_t tsz  = m_size;
         size_t tcap = _capacity;
 
-        _data     = other._data;
-        _size     = other._size;
+        m_data    = other.m_data;
+        m_size    = other.m_size;
         _capacity = other._capacity;
 
-        other._data     = td;
-        other._size     = tsz;
+        other.m_data    = td;
+        other.m_size    = tsz;
         other._capacity = tcap;
     }
 
     void __destory_all() noexcept {
         clear();
-        if (_data)
-            ::operator delete(_data);
+        if (m_data)
+            ::operator delete(m_data);
     }
 };
 } // namespace msd

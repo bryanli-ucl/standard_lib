@@ -1,10 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include <new>
+#include "msddef.hpp"
 
 #include "iterator.hpp"
 #include "move.hpp"

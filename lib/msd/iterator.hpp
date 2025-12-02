@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include "msddef.hpp"
 
 namespace msd {
 template <typename T>
@@ -12,47 +10,47 @@ class iterator {
     using data_ref = T&;
 
     protected:
-    data_ptr _ptr;
+    data_ptr m_ptr;
 
     public:
     iterator(data_ptr ptr = nullptr) noexcept
-    : _ptr(ptr) {}
+    : m_ptr(ptr) {}
     iterator(const iterator& other) noexcept
-    : _ptr(other._ptr) {}
+    : m_ptr(other.m_ptr) {}
     virtual ~iterator() = default;
 
     iterator& operator=(const iterator& other) noexcept {
-        if (this != &other) _ptr = other._ptr;
+        if (this != &other) m_ptr = other.m_ptr;
         return *this;
     }
 
     // itor . / ->
-    data_ref operator*() const noexcept { return *_ptr; }
-    data_ptr operator->() const noexcept { return _ptr; }
+    data_ref operator*() const noexcept { return *m_ptr; }
+    data_ptr operator->() const noexcept { return m_ptr; }
 
     // itor ==/!= itor
-    bool operator==(const iterator& other) noexcept { return _ptr == other._ptr; }
-    bool operator!=(const iterator& other) noexcept { return _ptr != other._ptr; }
+    bool operator==(const iterator& other) noexcept { return m_ptr == other.m_ptr; }
+    bool operator!=(const iterator& other) noexcept { return m_ptr != other.m_ptr; }
 
     // itor ++/-- (prefix)
     iterator& operator++() noexcept {
-        ++_ptr;
+        ++m_ptr;
         return *this;
     }
     iterator& operator--() noexcept {
-        --_ptr;
+        --m_ptr;
         return *this;
     }
 
     // itor ++/-- (suffix)
     iterator operator++(int) noexcept {
         iterator tmp{ *this };
-        ++_ptr;
+        ++m_ptr;
         return tmp;
     }
     iterator operator--(int) noexcept {
         iterator tmp{ *this };
-        --_ptr;
+        --m_ptr;
         return tmp;
     }
 };

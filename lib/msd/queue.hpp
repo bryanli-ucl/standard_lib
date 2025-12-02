@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include "msddef.hpp"
 
 namespace msd {
 
@@ -20,20 +18,6 @@ class queue {
 
     size_t _head;
     size_t _tail;
-
-    void resize(size_t cap) {
-        if (cap == _capacity) return;
-
-        data_ptr ndata = new data_t[cap];
-        for (size_t i = 0; i < _size; i++) {
-            ndata[i] = _data[(_head + i) % _capacity];
-        }
-        delete[] _data;
-        _data     = ndata;
-        _capacity = cap;
-        _head     = 0;
-        _tail     = _size;
-    }
 
     public:
     queue(const size_t cap = 64) {
@@ -111,6 +95,21 @@ class queue {
 
     size_t capacity() const { return _capacity; }
     size_t size() const { return _size; }
+
+    private:
+    void resize(size_t cap) {
+        if (cap == _capacity) return;
+
+        data_ptr ndata = ::new data_t[cap];
+        for (size_t i = 0; i < _size; i++) {
+            ndata[i] = _data[(_head + i) % _capacity];
+        }
+        delete[] _data;
+        _data     = ndata;
+        _capacity = cap;
+        _head     = 0;
+        _tail     = _size;
+    }
 };
 
 } // namespace msd
