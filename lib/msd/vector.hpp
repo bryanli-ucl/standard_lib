@@ -1,6 +1,8 @@
 #pragma once
 
-#include "msddef.hpp"
+#include "avr-def.hpp"
+
+#include <avr-memory.hpp>
 
 #include "iterator.hpp"
 #include "move.hpp"
@@ -28,15 +30,8 @@ class vector {
         m_size    = other.m_size;
         _capacity = other._capacity;
 
-        try {
-            for (size_t i = 0; i < m_size; i++)
-                ::new (&m_data[i]) data_t(other.m_data[i]);
-        } catch (...) {
-            for (size_t i = 0; i < m_size; i++)
-                m_data[i].~data_t();
-            ::operator delete(m_data);
-            throw;
-        }
+        for (size_t i = 0; i < m_size; i++)
+            new (&m_data[i]) data_t(other.m_data[i]);
     }
     vector& operator=(const vector& other) {
         if (this != &other) {
@@ -59,7 +54,9 @@ class vector {
 
     vector& operator=(vector&& other) noexcept {
         if (this != &other) {
-            __destory_all();
+            clear();
+            if (m_data)
+                ::operator delete(m_data);
 
             m_data    = other.m_data;
             m_size    = other.m_size;
@@ -72,17 +69,21 @@ class vector {
         return *this;
     }
 
-    virtual ~vector() { __destory_all(); }
+    virtual ~vector() {
+        clear();
+        if (m_data)
+            ::operator delete(m_data);
+    }
 
     // access
     const data_t& at(size_t index) const {
         if (index >= m_size)
-            throw;
+            index = 0;
         return m_data[index];
     }
     data_t& at(size_t index) {
         if (index >= m_size)
-            throw;
+            index = 0;
         return m_data[index];
     }
 
@@ -110,7 +111,7 @@ class vector {
 
     // control
     void pop_back() {
-        if (empty()) throw;
+        if (empty()) return;
         m_data[m_size - 1].~data_t();
         m_size--;
     }
@@ -130,24 +131,17 @@ class vector {
         size_t n_size   = 0;
         data_ptr n_data = static_cast<data_ptr>(::operator new(n_cap * sizeof(data_t)));
 
-        try {
-            for (size_t i = 0; i < m_size; i++) {
-                ::new (&n_data[i]) data_t(move(m_data[i]));
-                n_size++;
-            }
-
-            ::new (&n_data[n_size]) data_t(forward<Args>(args)...);
+        for (size_t i = 0; i < m_size; i++) {
+            new (&n_data[i]) data_t(move(m_data[i]));
             n_size++;
-        } catch (...) {
-            for (size_t i = 0; i < m_size; i++)
-                n_data[i].~data_t();
-
-            if (n_data)
-                ::operator delete(n_data);
-            throw;
         }
 
-        __destory_all();
+        new (&n_data[n_size]) data_t(forward<Args>(args)...);
+        n_size++;
+
+        clear();
+        if (m_data)
+            ::operator delete(m_data);
 
         m_data    = n_data;
         m_size    = n_size;
@@ -169,12 +163,6 @@ class vector {
         other.m_data    = td;
         other.m_size    = tsz;
         other._capacity = tcap;
-    }
-
-    void __destory_all() noexcept {
-        clear();
-        if (m_data)
-            ::operator delete(m_data);
     }
 };
 } // namespace msd

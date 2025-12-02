@@ -1,6 +1,6 @@
 #pragma once
 
-#include "msddef.hpp"
+#include "avr-def.hpp"
 
 #include "iterator.hpp"
 

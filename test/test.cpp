@@ -33,6 +33,13 @@ void test_vector_capacity_growth();
 void test_vector_complex_types();
 void test_vector_data_method();
 
+void test_basic_new_delete();
+void test_array_new_delete();
+void test_placement_new();
+void test_nothrow_new();
+void test_multiple_allocations();
+void test_zero_size_allocation();
+
 int main() {
     UNITY_BEGIN();
 
@@ -68,6 +75,13 @@ int main() {
     RUN_TEST(test_vector_capacity_growth);
     RUN_TEST(test_vector_complex_types);
     RUN_TEST(test_vector_data_method);
+
+    RUN_TEST(test_basic_new_delete);
+    RUN_TEST(test_array_new_delete);
+    RUN_TEST(test_placement_new);
+    RUN_TEST(test_nothrow_new);
+    RUN_TEST(test_multiple_allocations);
+    RUN_TEST(test_zero_size_allocation);
 
     UNITY_END();
 }
