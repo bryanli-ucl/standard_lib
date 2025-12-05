@@ -6,7 +6,7 @@ using msd::queue;
 
 // Test basic push_back and pop_back functionality
 void test_queue_push_back() {
-    queue<int> q;
+    queue<int, 128> q;
     for (int i = 0; i <= 127; i++) q.push_back(i);
     for (int i = 127; i >= 0; i--) {
         TEST_ASSERT_EQUAL(i, q.back());
@@ -17,7 +17,7 @@ void test_queue_push_back() {
 
 // Test push_front functionality
 void test_queue_push_front() {
-    queue<int> q;
+    queue<int, 128> q;
     for (int i = 0; i <= 127; i++) q.push_front(i);
     for (int i = 127; i >= 0; i--) {
         TEST_ASSERT_EQUAL(i, q.front());
@@ -27,7 +27,7 @@ void test_queue_push_front() {
 
 // Test pop_front functionality with push_back
 void test_queue_pop_front() {
-    queue<int> q;
+    queue<int, 256> q;
     for (int i = 0; i <= 200; i++) q.push_back(i);
     for (int i = 0; i <= 200; i++) {
         TEST_ASSERT_EQUAL(i, q.front());
@@ -38,7 +38,7 @@ void test_queue_pop_front() {
 
 // Test capacity increase functionality
 void test_queue_inc_cap() {
-    queue<int> q(2);
+    queue<int, 128> q;
     for (int i = 0; i <= 127; i++) q.push_back(i);
     for (int i = 0; i <= 127; i++) {
         TEST_ASSERT_EQUAL(i, q.front());
@@ -131,36 +131,6 @@ void test_queue_edge_cases() {
     TEST_ASSERT_EQUAL(0, q.size());
 }
 
-// Test capacity growth strategy
-void test_queue_capacity_growth() {
-    queue<int> q(4); // Initial capacity 4
-
-    TEST_ASSERT_EQUAL(4, q.capacity());
-
-    // Fill initial capacity
-    for (int i = 0; i < 4; i++) {
-        q.push_back(i);
-    }
-
-    TEST_ASSERT_EQUAL(4, q.capacity());
-    TEST_ASSERT_EQUAL(4, q.size());
-
-    // Trigger capacity increase
-    q.push_back(4);
-
-    // Capacity should grow (specific growth strategy depends on implementation)
-    TEST_ASSERT_GREATER_OR_EQUAL(5, q.capacity());
-    TEST_ASSERT_EQUAL(5, q.size());
-
-    // Verify data integrity after growth
-    for (int i = 0; i < 5; i++) {
-        TEST_ASSERT_EQUAL(i, q.front());
-        q.pop_front();
-    }
-
-    TEST_ASSERT_TRUE(q.empty());
-}
-
 // Test copy constructor and assignment operator
 void test_queue_copy_and_assignment() {
     queue<int> original;
@@ -198,8 +168,8 @@ void test_queue_copy_and_assignment() {
 
 // Test large number of elements
 void test_queue_large_scale() {
-    queue<int> q;
     const int LARGE_NUMBER = 1000;
+    queue<int, LARGE_NUMBER> q;
 
     // Push large number of elements
     for (int i = 0; i < LARGE_NUMBER; i++) {

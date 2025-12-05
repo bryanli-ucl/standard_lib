@@ -4,112 +4,96 @@
 
 namespace msd {
 
-template <typename T>
+template <typename T, size_t MaxSize = 16>
 class queue {
     using data_t   = T;
     using data_ptr = T*;
     using data_ref = T&;
 
     private:
-    data_t* _data;
+    data_t m_data[MaxSize];
 
-    size_t _size;
-    size_t _capacity;
+    size_t m_size;
+    size_t m_capacity;
 
-    size_t _head;
-    size_t _tail;
+    size_t m_head;
+    size_t m_tail;
 
     public:
-    queue(const size_t cap = 64) {
-        _capacity = cap;
-        _data     = new data_t[_capacity];
-        _size     = 0;
-        _head     = 0;
-        _tail     = 0;
-    }
+    queue() noexcept : m_capacity(MaxSize), m_size(0), m_head(0), m_tail(0) {}
 
-    virtual ~queue() { delete[] _data; }
-
-    queue(const queue& other) {
-        _capacity = other._capacity;
-        _size     = other._size;
-        _head     = other._head;
-        _tail     = other._tail;
-        _data     = new data_t[_capacity];
-        for (size_t i = 0; i < _capacity; ++i) {
-            _data[i] = other._data[i];
+    queue(const queue& other) noexcept : m_capacity(MaxSize) {
+        if (other.m_size > m_capacity) {
+            queue();
+            return;
+        }
+        m_size = other.m_size;
+        m_head = other.m_head;
+        m_tail = other.m_tail;
+        for (size_t i = 0; i < m_capacity; ++i) {
+            m_data[i] = other.m_data[i];
         }
     }
 
     queue& operator=(const queue& other) {
         if (this == &other) return *this;
 
-        delete[] _data;
-        _capacity = other._capacity;
-        _size     = other._size;
-        _head     = other._head;
-        _tail     = other._tail;
-        _data     = new data_t[_capacity];
-        for (size_t i = 0; i < _capacity; i++) {
-            _data[i] = other._data[i];
+        m_size = other.m_size;
+        m_head = other.m_head;
+        m_tail = other.m_tail;
+
+        for (size_t i = 0; i < MaxSize; ++i) {
+            m_data[i] = other.m_data[i];
         }
+
         return *this;
     }
 
-    void push_front(data_t val) {
-        if (full()) resize(_capacity * 2);
+    virtual ~queue() = default;
 
-        _head        = ((_head - 1) + _capacity) % _capacity;
-        _data[_head] = val;
-        _size        = _size + 1;
+    void push_front(const data_t& val) {
+        if (full()) {
+            m_tail = ((m_tail - 1) + m_capacity) % m_capacity;
+        } else {
+            m_size = m_size + 1;
+        }
+        m_head         = ((m_head - 1) + m_capacity) % m_capacity;
+        m_data[m_head] = val;
     }
 
     void push_back(data_t val) {
-        if (full()) resize(_capacity * 2);
-
-        _data[_tail] = val;
-        _tail        = (_tail + 1) % _capacity;
-        _size        = _size + 1;
+        if (full()) {
+            m_head = ((m_head + 1) + m_capacity) % m_capacity;
+        } else {
+            m_size++;
+        }
+        m_data[m_tail] = val;
+        m_tail         = ((m_tail + 1) + m_capacity) % m_capacity;
     }
 
     void pop_front() {
         if (empty()) return;
 
-        _head = (_head + 1) % _capacity;
-        _size--;
+        m_head = (m_head + 1) % m_capacity;
+        m_size--;
     }
 
     void pop_back() {
         if (empty()) return;
 
-        _tail = (_tail - 1) % _capacity;
-        _size--;
+        m_tail = (m_tail - 1) % m_capacity;
+        m_size--;
     }
 
-    data_t& front() const { return _data[_head]; }
-    data_t& back() const { return _data[((_tail - 1) + _capacity) % _capacity]; }
+    data_t& front() { return m_data[m_head]; }
+    data_t& back() { return m_data[((m_tail - 1) + m_capacity) % m_capacity]; }
 
-    void clear() { _tail = 0, _head = 0, _size = 0; }
-    bool empty() const { return _size == 0; }
-    bool full() const { return _size == _capacity; }
+    void clear() { m_tail = 0, m_head = 0, m_size = 0; }
+    bool empty() const { return m_size == 0; }
+    bool full() const { return m_size == m_capacity; }
 
-    size_t capacity() const { return _capacity; }
-    size_t size() const { return _size; }
-
-    private:
-    void resize(size_t cap) {
-        if (cap == _capacity) return;
-
-        data_ptr ndata = ::new data_t[cap];
-        for (size_t i = 0; i < _size; i++) {
-            ndata[i] = _data[(_head + i) % _capacity];
-        }
-        delete[] _data;
-        _data     = ndata;
-        _capacity = cap;
-        _head     = 0;
-        _tail     = _size;
-    }
+    size_t capacity() const { return m_capacity; }
+    size_t size() const { return m_size; }
 };
 
 } // namespace msd
