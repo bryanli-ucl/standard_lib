@@ -1,6 +1,12 @@
 #pragma once
 
+#ifdef __AVR__
 #include <avr-def.hpp>
+#else
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#endif
 
 #include "iterator.hpp"
 #include "move.hpp"
@@ -17,8 +23,8 @@ class string_basic {
     private:
     data_t m_data[N + 1];
     data_t m_null_data{};
-    size_t m_size     = 0;
-    size_t m_capacity = N;
+    size_t m_size;
+    size_t m_capacity;
 
     public:
     // =============== default construction ===================
@@ -40,8 +46,8 @@ class string_basic {
     string_basic& operator=(const string_basic& other) {
         if (this == &other)
             return *this;
-
-        m_size = (other.m_size > m_capacity) ? m_capacity : other.m_size;
+        m_capacity = N;
+        m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
 
         for (size_t i = 0; i < m_size; i++)
             m_data[i] = other.m_data[i];
@@ -61,11 +67,10 @@ class string_basic {
     // copy construction with different N by operator
     template <size_t M>
     string_basic& operator=(const string_basic<CharT, M>& other) {
-        if constexpr (M == N)
-            if (this == &other)
-                return *this;
+        if (this == &other)
+            return *this;
 
-        for (m_size = 0; m_size < m_capacity && m_size < other.size(); m_size++)
+        for (m_size = 0, m_capacity = N; m_size < m_capacity && m_size < other.size(); m_size++)
             m_data[m_size] = other[m_size];
 
         m_data[m_size] = m_null_data;
@@ -88,7 +93,8 @@ class string_basic {
         if (this == &other)
             return *this;
 
-        m_size = (other.m_size > m_capacity) ? m_capacity : other.m_size;
+        m_capacity = N;
+        m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
         for (size_t i = 0; i < m_size; i++)
             m_data[i] = msd::move(other.m_data[i]);
 
@@ -111,9 +117,8 @@ class string_basic {
     // move construction with different N by operator
     template <size_t M>
     string_basic& operator=(string_basic<CharT, M>&& other) noexcept {
-        if constexpr (M == N)
-            if (this == &other)
-                return *this;
+        if (this == &other)
+            return *this;
 
         for (m_size = 0; m_size < m_capacity && m_size < other.size(); m_size++)
             m_data[m_size] = msd::move(other[m_size]);
@@ -185,7 +190,7 @@ class string_basic {
         m_data[m_size] = data_t();
         return *this;
     }
-    
+
     string_basic& operator+=(data_t ch) {
         if (m_size >= N) return *this;
 

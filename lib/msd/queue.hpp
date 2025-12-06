@@ -1,6 +1,18 @@
 #pragma once
 
-#include "avr-def.hpp"
+// remove reference
+template <typename T>
+struct remove_reference {
+    using type = T;
+};
+template <typename T>
+struct remove_reference<T&> {
+    using type = T;
+};
+template <typename T>
+struct remove_reference<T&&> {
+    using type = T;
+};
 
 namespace msd {
 
@@ -20,9 +32,9 @@ class queue {
     size_t m_tail;
 
     public:
-    queue() noexcept : m_capacity(MaxSize), m_size(0), m_head(0), m_tail(0) {}
+    queue() noexcept : m_size(0), m_capacity(MaxSize), m_head(0), m_tail(0) {}
 
-    queue(const queue& other) noexcept : m_capacity(MaxSize) {
+    queue(const queue& other) noexcept {
         if (other.m_size > m_capacity) {
             queue();
             return;

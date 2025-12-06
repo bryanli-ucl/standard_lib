@@ -44,6 +44,7 @@ void loop() {
     delay(p[5]);
     digitalWrite(13, LOW);
     delay(p[10]);
+    delete[] p;
 }
 
 #endif

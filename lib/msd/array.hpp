@@ -1,6 +1,12 @@
 #pragma once
 
-#include "avr-def.hpp"
+#ifdef __AVR__
+#include <avr-def.hpp>
+#else
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#endif
 
 #include "iterator.hpp"
 

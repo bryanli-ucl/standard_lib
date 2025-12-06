@@ -3,33 +3,33 @@
 #include <Arduino.h>
 
 #include <singleton.hpp>
-#include <string.hpp>
 
-namespace msd {
+namespace avr {
+
+enum class Level {
+    DEBUG   = 4,
+    INFO    = 3,
+    WARN    = 2,
+    ERROR   = 1,
+    FATAL   = 0,
+    DISABLE = -1,
+};
+struct BaudRate {
+    static constexpr uint32_t BAUD_300    = 300;
+    static constexpr uint32_t BAUD_1200   = 1200;
+    static constexpr uint32_t BAUD_2400   = 2400;
+    static constexpr uint32_t BAUD_4800   = 4800;
+    static constexpr uint32_t BAUD_9600   = 9600;
+    static constexpr uint32_t BAUD_19200  = 19200;
+    static constexpr uint32_t BAUD_38400  = 38400;
+    static constexpr uint32_t BAUD_57600  = 57600;
+    static constexpr uint32_t BAUD_115200 = 115200;
+};
+
 class logger : public msd::singleton<logger> {
 
     friend class msd::singleton<logger>;
 
-    enum class Level {
-        DEBUG   = 4,
-        INFO    = 3,
-        WARN    = 2,
-        ERROR   = 1,
-        FATAL   = 0,
-        DISABLE = -1,
-    };
-
-    struct BaudRate {
-        static constexpr uint32_t BAUD_300    = 300;
-        static constexpr uint32_t BAUD_1200   = 1200;
-        static constexpr uint32_t BAUD_2400   = 2400;
-        static constexpr uint32_t BAUD_4800   = 4800;
-        static constexpr uint32_t BAUD_9600   = 9600;
-        static constexpr uint32_t BAUD_19200  = 19200;
-        static constexpr uint32_t BAUD_38400  = 38400;
-        static constexpr uint32_t BAUD_57600  = 57600;
-        static constexpr uint32_t BAUD_115200 = 115200;
-    };
 
     private:
     uint32_t m_baud_rate;
@@ -56,7 +56,7 @@ class logger : public msd::singleton<logger> {
         m_level     = level;
 
         Serial.begin(br);
-        if (Serial == true) delay(10);
+        delay(50);
 
         m_is_initialized = true;
 
@@ -115,7 +115,8 @@ class logger : public msd::singleton<logger> {
         // print level
         print_level(level);
         // print message
-        Serial.println(str);
+        Serial.print(str);
+        Serial.print('\n');
     }
     static void print_level(Level level) {
         Serial.print('[');
@@ -146,4 +147,4 @@ class logger : public msd::singleton<logger> {
         }
     }
 };
-} // namespace msd
+} // namespace avr

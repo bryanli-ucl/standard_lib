@@ -1,8 +1,14 @@
 #pragma once
 
-#include "avr-def.hpp"
-
+#ifdef __AVR__
+#include <avr-def.hpp>
 #include <avr-memory.hpp>
+#else
+#include <new>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#endif
 
 #include "iterator.hpp"
 #include "move.hpp"
