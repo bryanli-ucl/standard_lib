@@ -1,7 +1,7 @@
 #include <unity.h>
 
-#include <queue.hpp>
-#include <vector.hpp>
+#include <queue>
+#include <vector>
 
 // Test default construction
 void test_vector_default_construction(void) {

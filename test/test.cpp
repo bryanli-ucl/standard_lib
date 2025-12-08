@@ -38,17 +38,6 @@ void test_nothrow_new();
 void test_multiple_allocations();
 void test_zero_size_allocation();
 
-
-void test_string_constructors();
-void test_string_assignment();
-void test_string_access();
-void test_string_capacity();
-void test_string_modifiers();
-void test_string_concatenation();
-void test_string_iterators();
-void test_string_edge_cases();
-void test_string_data_methods();
-
 int main() {
     UNITY_BEGIN();
 
@@ -82,16 +71,6 @@ int main() {
     RUN_TEST(test_vector_iterators);
     RUN_TEST(test_vector_complex_types);
     RUN_TEST(test_vector_data_method);
-
-    RUN_TEST(test_string_constructors);
-    RUN_TEST(test_string_assignment);
-    RUN_TEST(test_string_access);
-    RUN_TEST(test_string_capacity);
-    RUN_TEST(test_string_modifiers);
-    RUN_TEST(test_string_concatenation);
-    RUN_TEST(test_string_iterators);
-    RUN_TEST(test_string_edge_cases);
-    RUN_TEST(test_string_data_methods);
 
     RUN_TEST(test_basic_new_delete);
     RUN_TEST(test_array_new_delete);

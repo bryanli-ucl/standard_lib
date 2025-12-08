@@ -1,7 +1,6 @@
 #include <unity.h>
 
-#include <queue.hpp>
-#include <string.hpp>
+#include <queue>
 using msd::queue;
 
 // Test basic push_back and pop_back functionality

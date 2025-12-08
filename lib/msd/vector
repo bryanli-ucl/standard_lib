@@ -4,14 +4,13 @@
 #include <avr-def.hpp>
 #include <avr-memory.hpp>
 #else
-#include <new>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #endif
 
-#include "iterator.hpp"
-#include "move.hpp"
+#include <iterator>
+#include <move>
 
 namespace msd {
 template <typename T, size_t MaxSize = 16>

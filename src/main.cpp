@@ -1,6 +1,6 @@
-#include <array.hpp>
-#include <queue.hpp>
-#include <vector.hpp>
+#include <array>
+#include <queue>
+#include <vector>
 
 #include <assert.h>
 
