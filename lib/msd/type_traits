@@ -55,14 +55,17 @@ struct constant {
     constexpr val_t operator()() const noexcept { return value; }
 };
 
+using true_type  = constant<bool, true>;
+using false_type = constant<bool, false>;
+
 /// @brief conjunction
-template <typename...> struct conjunction : true_type {};
+template <typename...> struct conjunction : public true_type {};
 template <typename B1> struct conjunction<B1> : B1 {};
 template <typename B1, typename... Bn> struct conjunction<B1, Bn...> : conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
 template <typename... Bn> inline constexpr bool conjunction_v = conjunction<Bn...>::value;
 
 /// @brief disjunction
-template <typename...> struct disjunction : false_type {};
+template <typename...> struct disjunction : public false_type {};
 template <typename B1> struct disjunction<B1> : B1 {};
 template <typename B1, typename... Bn> struct disjunction<B1, Bn...> : conditional_t<bool(B1::value), B1, disjunction<Bn...>> {};
 template <typename... Bn> inline constexpr bool disjunction_v = disjunction<Bn...>::value;
@@ -70,9 +73,6 @@ template <typename... Bn> inline constexpr bool disjunction_v = disjunction<Bn..
 /// @brief negation
 template <typename B> struct negation : constant<bool, !bool(B::value)> {};
 template <typename B> inline constexpr bool negation_v = negation<B>::value;
-
-using true_type  = constant<bool, true>;
-using false_type = constant<bool, false>;
 
 /// @brief is integer
 namespace __details {

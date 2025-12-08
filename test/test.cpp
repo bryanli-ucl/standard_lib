@@ -1,5 +1,7 @@
 #include <unity.h>
 
+#include "test_tuple.hpp"
+
 void test_array_basic();
 void test_array_access();
 void test_array_fill();
@@ -80,4 +82,6 @@ int main() {
     RUN_TEST(test_zero_size_allocation);
 
     UNITY_END();
+
+    test_tuple();
 }

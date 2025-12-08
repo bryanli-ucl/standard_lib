@@ -1,0 +1,127 @@
+#pragma once
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include <move>
+#include <type_traits>
+
+namespace msd {
+/// @brief Tuple, use in process return value
+/// @tparam ...Tn
+template <typename... Tn> class tuple;
+
+namespace __details {
+template <size_t I, typename... Tn>
+class tuple_impl;
+
+/// @brief tuple impl for recursion
+/// @tparam T1 first argument
+/// @tparam ...Tn rest arguments
+/// @tparam I `I` th layer
+template <size_t I, typename T1, typename... Tn>
+class tuple_impl<I, T1, Tn...> : public tuple_impl<I + 1, Tn...> {
+    using Base = tuple_impl<I + 1, Tn...>;
+
+    private:
+    T1 m_val;
+
+    public:
+    // defautl constructor
+    tuple_impl() noexcept : Base(), m_val() {}
+
+    // copy construction
+    tuple_impl(const tuple_impl& other) noexcept : Base(static_cast<const Base&>(other)), m_val(other.m_val) {}
+    tuple_impl& operator=(const tuple_impl& other) noexcept {
+        if (this != &other) {
+            Base::operator=(static_cast<const Base&>(other));
+            m_val = other.m_val;
+        }
+        return *this;
+    }
+
+    // move construction
+    tuple_impl(tuple_impl&& other) noexcept : Base(msd::move(other.get_base())), m_val(msd::move(other.m_val)) {}
+    tuple_impl& operator=(tuple_impl&& other) noexcept {
+        if (this != &other) {
+            Base::operator=(static_cast<Base&&>(other));
+            m_val = msd::move(other.m_val);
+        }
+        return *this;
+    }
+
+    // forward constructor
+    template <typename U1, typename... Un>
+    tuple_impl(U1&& u1, Un&&... un) noexcept : Base(msd::forward<Un>(un)...), m_val(msd::forward<U1>(u1)) {}
+
+    T1& get_val() noexcept { return m_val; }
+    const T1& get_val() const noexcept { return m_val; }
+
+    Base& get_base() noexcept { return *this; }
+    const Base& get_base() const noexcept { return *this; }
+};
+
+/// @brief basic satruation
+/// @tparam I `I`th layer
+template <size_t I> // it means template <size_t I, None>
+class tuple_impl<I> {
+    public:
+    tuple_impl()                             = default;
+    tuple_impl(const tuple_impl&)            = default;
+    tuple_impl(tuple_impl&&)                 = default;
+    tuple_impl& operator=(const tuple_impl&) = default;
+    tuple_impl& operator=(tuple_impl&&)      = default;
+};
+
+template <size_t I, typename T1, typename... Tn>
+constexpr T1& get_helper(tuple_impl<I, T1, Tn...>& t) noexcept { return t.get_val(); }
+
+template <size_t I, typename T1, typename... Tn>
+constexpr const T1& get_helper(const tuple_impl<I, T1, Tn...>& t) noexcept { return t.get_val(); }
+} // namespace __details
+
+template <typename... Tn>
+class tuple : public __details::tuple_impl<0, Tn...> {
+    using Base = __details::tuple_impl<0, Tn...>;
+
+    public:
+    // default constructor
+    tuple() noexcept : Base() {}
+
+    // copy constructor
+    tuple(const tuple& other) noexcept : Base(static_cast<const Base&>(other)) {}
+    tuple& operator=(const tuple&) = default;
+
+    // move contructor
+    tuple(tuple&&)            = default;
+    tuple& operator=(tuple&&) = default;
+
+    // perfect forward constructor
+    template <typename U1, typename... Un, typename = typename enable_if< !is_same< typename remove_cv<typename remove_reference<U1>::type>::type, tuple>::value > ::type >
+    explicit tuple(U1&& u1, Un&&... un) noexcept : Base(msd::forward<U1>(u1), msd::forward<Un>(un)...) {}
+};
+
+template <size_t I, typename... Tn>
+constexpr auto& get(tuple<Tn...>& t) noexcept { return __details::get_helper<I>(t); }
+template <size_t I, typename... Tn>
+constexpr const auto& get(const tuple<Tn...>& t) noexcept { return __details::get_helper<I>(t); }
+
+/// @brief make tuple, create a tuple by args
+/// @tparam ...Tn may not need to input, it is types of the args
+/// @param ...args the args you want to put into tuple in order
+/// @return
+template <typename... Tn>
+constexpr tuple<Tn...> make_tuple(Tn&&... args) noexcept { return tuple<Tn...>(msd::forward<Tn>(args)...); }
+
+
+template <typename T> struct tuple_size {};
+template <typename... Tn> struct tuple_size<const tuple<Tn...>> {
+    static constexpr size_t value = sizeof...(Tn);
+};
+template <typename... Tn> struct tuple_size<tuple<Tn...>> {
+    static constexpr size_t value = sizeof...(Tn);
+};
+
+
+} // namespace msd
