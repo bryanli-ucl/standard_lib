@@ -1,3 +1,5 @@
+#pragma once
+
 #include <unity.h>
 
 #include <queue>
@@ -184,4 +186,20 @@ void test_queue_large_scale() {
     }
 
     TEST_ASSERT_TRUE(q.empty());
+}
+
+void test_queue() {
+    UNITY_BEGIN();
+
+    RUN_TEST(test_queue_push_back);
+    RUN_TEST(test_queue_push_front);
+    RUN_TEST(test_queue_pop_front);
+    RUN_TEST(test_queue_inc_cap);
+    RUN_TEST(test_queue_basic_fifo);
+    RUN_TEST(test_queue_mixed_operations);
+    RUN_TEST(test_queue_edge_cases);
+    RUN_TEST(test_queue_copy_and_assignment);
+    RUN_TEST(test_queue_large_scale);
+
+    UNITY_END();
 }

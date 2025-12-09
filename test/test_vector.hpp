@@ -1,3 +1,5 @@
+#pragma once
+
 #include <unity.h>
 
 #include <queue>
@@ -247,4 +249,22 @@ void test_vector_data_method(void) {
     TEST_ASSERT_NOT_NULL(const_data);
     TEST_ASSERT_EQUAL(10, const_data[0]);
     TEST_ASSERT_EQUAL(20, const_data[1]);
+}
+
+void test_vector() {
+    UNITY_BEGIN();
+    RUN_TEST(test_vector_default_construction);
+    RUN_TEST(test_vector_copy_construction);
+    RUN_TEST(test_vector_move_construction);
+    RUN_TEST(test_vector_copy_assignment);
+    RUN_TEST(test_vector_move_assignment);
+    RUN_TEST(test_vector_parameter_pack_construction);
+    RUN_TEST(test_vector_push_emplace_back);
+    RUN_TEST(test_vector_element_access);
+    RUN_TEST(test_vector_pop_back);
+    RUN_TEST(test_vector_clear);
+    RUN_TEST(test_vector_iterators);
+    RUN_TEST(test_vector_complex_types);
+    RUN_TEST(test_vector_data_method);
+    UNITY_END();
 }

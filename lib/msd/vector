@@ -13,32 +13,32 @@
 #include <move>
 
 namespace msd {
-template <typename T, size_t MaxSize = 16>
+template <typename T, size_t N = 16>
 class vector {
     using data_t   = T;
     using data_ptr = T*;
     using data_ref = T&;
 
     private:
-    data_t m_data[MaxSize];
+    data_t m_data[N];
     size_t m_size;
     size_t m_capacity;
 
     public:
     // default construction
     constexpr vector() noexcept
-    : m_data{}, m_size(), m_capacity(MaxSize) {}
+    : m_data{}, m_size(), m_capacity(N) {}
 
     // copy construction
     vector(const vector& other) {
-        m_capacity = MaxSize;
+        m_capacity = N;
         m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
         for (size_t i = 0; i < m_size; i++)
             m_data[i] = other.m_data[i];
     }
     vector& operator=(const vector& other) {
         if (this != &other) {
-            m_capacity = MaxSize;
+            m_capacity = N;
             m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
             for (size_t i = 0; i < m_size; i++)
                 m_data[i] = other.m_data[i];
@@ -48,7 +48,7 @@ class vector {
 
     // move construction
     vector(vector&& other) noexcept {
-        m_capacity = MaxSize;
+        m_capacity = N;
         m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
         for (size_t i = 0; i < m_size; i++)
             m_data[i] = move(other.m_data[i]);
@@ -61,7 +61,7 @@ class vector {
 
         this->clear();
 
-        m_capacity = MaxSize;
+        m_capacity = N;
         m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
         for (size_t i = 0; i < m_size; i++)
             m_data[i] = move(other.m_data[i]);

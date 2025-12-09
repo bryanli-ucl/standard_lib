@@ -4,6 +4,70 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <move>
+
 namespace msd {
+template <typename T, typename U>
+struct pair {
+    using type_1 = T;
+    using type_2 = U;
+
+    type_1 first;
+    type_2 second;
+
+    // default constructor
+    pair() noexcept : first(), second() {}
+
+    // copy constructor
+    pair(const pair& other) noexcept : first(other.first), second(other.second) {}
+    pair(const type_1& a, const type_2& b) noexcept : first(a), second(b) {}
+    pair& operator=(const pair& other) {
+        if (this == &other) return *this;
+        first  = other.first;
+        second = other.second;
+        return *this;
+    }
+
+    // move constructor
+    pair(pair&& other) noexcept : first(msd::move(other.first)), second(msd::move(other.second)) {}
+    pair& operator=(pair&& other) {
+        if (this == &other) return *this;
+        first  = msd::move(other.first);
+        second = msd::move(other.second);
+        return *this;
+    }
+
+    // forward constructor
+    template <typename Y1, typename Y2>
+    pair(Y1&& a, Y2&& b) noexcept : first(msd::forward<Y1>(a)), second(msd::forward<Y2>(b)) {}
+
+    // converting copy assignment
+    template <typename Y1, typename Y2>
+    pair& operator=(const pair<Y1, Y2>& other) {
+        first  = other.first;
+        second = other.second;
+        return *this;
+    }
+
+    // converting move assignment
+    template <typename Y1, typename Y2>
+    pair& operator=(pair<Y1, Y2>&& other) noexcept {
+        first  = msd::forward<Y1>(other.first);
+        second = msd::forward<Y2>(other.second);
+        return *this;
+    }
+
+    void swap(pair& other) noexcept {
+        msd::swap(first, other.first);
+        msd::swap(second, other.second);
+    }
+};
+
+template <typename T, typename U>
+auto make_pair(T&& a, U&& b) -> pair<msd::decay_t<T>, msd::decay_t<U>> {
+    return pair<msd::decay_t<T>, msd::decay_t<U>>(msd::forward<T>(a), msd::forward<U>(b));
+}
+
+template <typename T, typename U> void swap(const pair<T, U>& a, const pair<T, U>& b) { a.swap(b); }
 
 } // namespace msd

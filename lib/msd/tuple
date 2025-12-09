@@ -126,23 +126,9 @@ class tuple : public __details::tuple_impl<0, Tn...> {
     template <typename U1, typename... Un, typename = typename enable_if<!is_same<typename remove_cv<typename remove_reference<U1>::type>::type, tuple>::value>::type>
     explicit tuple(U1&& u1, Un&&... un) noexcept : Base(msd::forward<U1>(u1), msd::forward<Un>(un)...) {}
 };
-template <size_t I, typename... Tn>
-constexpr typename tuple_element<I, tuple<Tn...>>::type&
-get(tuple<Tn...>& t) noexcept {
-    return __details::get_helper<I>(t);
-}
-
-template <size_t I, typename... Tn>
-constexpr const typename tuple_element<I, tuple<Tn...>>::type&
-get(const tuple<Tn...>& t) noexcept {
-    return __details::get_helper<I>(t);
-}
-
-template <size_t I, typename... Tn>
-constexpr typename tuple_element<I, tuple<Tn...>>::type&&
-get(tuple<Tn...>&& t) noexcept {
-    return __details::get_helper<I>(msd::move(t));
-}
+template <size_t I, typename... Tn> constexpr typename tuple_element<I, tuple<Tn...>>::type& get(tuple<Tn...>& t) noexcept { return __details::get_helper<I>(t); }
+template <size_t I, typename... Tn> constexpr const typename tuple_element<I, tuple<Tn...>>::type& get(const tuple<Tn...>& t) noexcept { return __details::get_helper<I>(t); }
+template <size_t I, typename... Tn> constexpr typename tuple_element<I, tuple<Tn...>>::type&& get(tuple<Tn...>&& t) noexcept { return __details::get_helper<I>(msd::move(t)); }
 
 /// @brief make tuple, create a tuple by args
 /// @tparam ...Tn may not need to input, it is types of the args

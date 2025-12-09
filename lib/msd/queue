@@ -16,14 +16,14 @@ struct remove_reference<T&&> {
 
 namespace msd {
 
-template <typename T, size_t MaxSize = 16>
+template <typename T, size_t N = 16>
 class queue {
     using data_t   = T;
     using data_ptr = T*;
     using data_ref = T&;
 
     private:
-    data_t m_data[MaxSize];
+    data_t m_data[N];
 
     size_t m_size;
     size_t m_capacity;
@@ -32,9 +32,10 @@ class queue {
     size_t m_tail;
 
     public:
-    queue() noexcept : m_size(0), m_capacity(MaxSize), m_head(0), m_tail(0) {}
+    queue() noexcept : m_size(0), m_capacity(N), m_head(0), m_tail(0) {}
+    virtual ~queue() = default;
 
-    queue(const queue& other) noexcept {
+    queue(const queue& other) noexcept : m_capacity(N) {
         if (other.m_size > m_capacity) {
             queue();
             return;
@@ -54,14 +55,13 @@ class queue {
         m_head = other.m_head;
         m_tail = other.m_tail;
 
-        for (size_t i = 0; i < MaxSize; ++i) {
+        for (size_t i = 0; i < N; ++i) {
             m_data[i] = other.m_data[i];
         }
 
         return *this;
     }
 
-    virtual ~queue() = default;
 
     void push_front(const data_t& val) {
         if (full()) {

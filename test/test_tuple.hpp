@@ -13,6 +13,8 @@
 unsigned long micros() {
     return 0; // 简化版本，或者使用 chrono
 }
+#else
+#include <Arduino.h>
 #endif
 
 // ==================== 基本功能测试 ====================
