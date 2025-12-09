@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pair> 
+#include <pair>
 #include <unity.h>
 #include <vector>
 
@@ -366,6 +366,13 @@ void test_pair_function_pointers() {
     TEST_ASSERT_EQUAL(12, p.second(3, 4));
 }
 
+void test_pair_structed_bind() {
+    auto p      = msd::make_pair(10, 20);
+    auto [a, b] = p;
+    TEST_ASSERT_EQUAL(10, a);
+    TEST_ASSERT_EQUAL(20, b);
+}
+
 // 主测试函数
 void test_pair_basic() {
     RUN_TEST(test_pair_default_constructor);
@@ -417,4 +424,6 @@ void test_pair_basic() {
     RUN_TEST(test_pair_multiple_assignments);
     RUN_TEST(test_pair_complex_scenario);
     RUN_TEST(test_pair_function_pointers);
+
+    RUN_TEST(test_pair_structed_bind);
 }

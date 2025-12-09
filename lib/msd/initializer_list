@@ -1,0 +1,48 @@
+#pragma once
+
+#include <stddef.h>
+
+#include <iterator>
+
+namespace std {
+template <typename T>
+class initializer_list {
+    using data_t         = T;
+    using data_ref       = T&;
+    using data_const_ref = const T&;
+    using data_ptr       = T*;
+    using data_const_ptr = const T*;
+
+    private:
+    data_const_ptr m_begin;
+    size_t m_size;
+
+    constexpr initializer_list(data_const_ptr begin, size_t size) noexcept : m_begin(begin), m_size(size) {}
+
+    public:
+    constexpr initializer_list() noexcept : m_begin(nullptr), m_size(0) {}
+    ~initializer_list() noexcept = default;
+
+    constexpr size_t size() noexcept { return m_size; }
+    constexpr bool empty() noexcept { return m_size == 0; }
+
+    constexpr data_ref operator[](size_t n) const { return m_begin[n]; }
+    constexpr data_ref front() const { return m_begin[0]; }
+    constexpr data_ref back() const { return m_begin[m_size - 1]; }
+
+    constexpr msd::iterator<const data_t> begin() noexcept { return msd::iterator<const data_t>(m_begin); }
+    constexpr msd::iterator<const data_t> end() noexcept { return msd::iterator<const data_t>(m_begin + m_size); }
+
+    template <typename U>
+    friend constexpr initializer_list<U> make_initializer_list(const U*, size_t);
+};
+
+template <typename T>
+constexpr initializer_list<T> make_initializer_list(const T* begin, size_t size) {
+    return initializer_list<T>(begin, size);
+}
+
+template <typename T>
+constexpr initializer_list<T> __make_initializer_list(const T* arr, size_t n);
+
+} // namespace std

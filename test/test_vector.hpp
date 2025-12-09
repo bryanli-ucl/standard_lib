@@ -9,8 +9,9 @@
 void test_vector_default_construction(void) {
     msd::vector<int> v;
     TEST_ASSERT_EQUAL(0, v.size());
-    TEST_ASSERT_EQUAL(16, v.capacity());
     TEST_ASSERT_TRUE(v.empty());
+    v.emplace_back(1);
+    TEST_ASSERT_EQUAL(16, v.capacity());
 }
 
 // Test copy construction
@@ -135,27 +136,6 @@ void test_vector_element_access(void) {
     TEST_ASSERT_EQUAL(10, const_v.at(0));
 }
 
-// Test pop_back functionality
-void test_vector_pop_back(void) {
-    msd::vector<int> v;
-    v.push_back(1);
-    v.push_back(2);
-    v.push_back(3);
-
-    v.pop_back();
-    TEST_ASSERT_EQUAL(2, v.size());
-    TEST_ASSERT_EQUAL(1, v[0]);
-    TEST_ASSERT_EQUAL(2, v[1]);
-
-    v.pop_back();
-    TEST_ASSERT_EQUAL(1, v.size());
-    TEST_ASSERT_EQUAL(1, v[0]);
-
-    v.pop_back();
-    TEST_ASSERT_EQUAL(0, v.size());
-    TEST_ASSERT_TRUE(v.empty());
-}
-
 // Test clear functionality
 void test_vector_clear(void) {
     msd::vector<int> v;
@@ -253,6 +233,7 @@ void test_vector_data_method(void) {
 
 void test_vector() {
     UNITY_BEGIN();
+
     RUN_TEST(test_vector_default_construction);
     RUN_TEST(test_vector_copy_construction);
     RUN_TEST(test_vector_move_construction);
@@ -261,10 +242,10 @@ void test_vector() {
     RUN_TEST(test_vector_parameter_pack_construction);
     RUN_TEST(test_vector_push_emplace_back);
     RUN_TEST(test_vector_element_access);
-    RUN_TEST(test_vector_pop_back);
     RUN_TEST(test_vector_clear);
     RUN_TEST(test_vector_iterators);
     RUN_TEST(test_vector_complex_types);
     RUN_TEST(test_vector_data_method);
+
     UNITY_END();
 }

@@ -1,24 +1,22 @@
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 
 namespace msd {
 template <typename T>
 class iterator {
-    using data_t   = T;
-    using data_ptr = T*;
-    using data_ref = T&;
+    using data_t         = T;
+    using data_ref       = T&;
+    using data_const_ref = const T&;
+    using data_ptr       = T*;
+    using data_const_ptr = const T*;
 
     protected:
     data_ptr m_ptr;
 
     public:
-    iterator(data_ptr ptr = nullptr) noexcept
-    : m_ptr(ptr) {}
-    iterator(const iterator& other) noexcept
-    : m_ptr(other.m_ptr) {}
+    iterator(data_ptr ptr = nullptr) noexcept : m_ptr(ptr) {}
+    iterator(const iterator& other) noexcept : m_ptr(other.m_ptr) {}
     virtual ~iterator() = default;
 
     iterator& operator=(const iterator& other) noexcept {

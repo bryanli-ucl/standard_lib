@@ -1,0 +1,14 @@
+#pragma once
+
+#include <stddef.h>
+
+namespace msd {
+template <typename T>
+class unique_ptr {
+    using data_t         = T;
+    using data_ref       = T&;
+    using data_const_ref = const T&;
+    using data_ptr       = T*;
+    using data_const_ptr = const T*;
+};
+} // namespace msd

@@ -1,0 +1,17 @@
+#pragma once
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+namespace msd {
+namespace literals {
+struct Seconds {
+    double value;
+};
+constexpr auto operator""_s(double value) -> Seconds {
+    return Seconds{ .value = value };
+}
+} // namespace literals
+
+} // namespace msd

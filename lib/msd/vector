@@ -1,100 +1,158 @@
 #pragma once
 
-#ifdef __AVR__
-#include <avr-def.hpp>
-#include <avr-memory.hpp>
-#else
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
-#endif
 
+#include <initializer_list>
 #include <iterator>
 #include <move>
 
+#include <avr-memory.hpp>
+
 namespace msd {
-template <typename T, size_t N = 16>
+template <typename T>
 class vector {
-    using data_t   = T;
-    using data_ptr = T*;
-    using data_ref = T&;
+    using data_t         = T;
+    using data_ref       = T&;
+    using data_const_ref = const T&;
+    using data_ptr       = T*;
+    using data_const_ptr = const T*;
 
     private:
-    data_t m_data[N];
-    size_t m_size;
+    data_ptr m_data;
     size_t m_capacity;
+    size_t m_size;
+
+    void deallocate() {
+        if (m_data == nullptr) return;
+        for (size_t i = 0; i < m_size; i++)
+            m_data[i].~T();
+        ::operator delete(m_data);
+        m_data = nullptr;
+    }
+
+    void reallocate(size_t n_cap) {
+        data_ptr n_data = static_cast<data_ptr>(::operator new(n_cap * sizeof(data_t)));
+
+        size_t n_sz = (m_size < n_cap) ? m_size : n_cap;
+
+        for (size_t i = 0; i < n_sz; ++i) {
+            new (&n_data[i]) data_t(msd::move(m_data[i]));
+        }
+
+        deallocate();
+
+        m_data     = n_data;
+        m_size     = n_sz;
+        m_capacity = n_cap;
+    }
 
     public:
-    // default construction
-    constexpr vector() noexcept
-    : m_data{}, m_size(), m_capacity(N) {}
+    constexpr vector() noexcept : m_data(nullptr), m_capacity(0), m_size(0) {}
+    ~vector() noexcept { deallocate(); }
 
-    // copy construction
-    vector(const vector& other) {
-        m_capacity = N;
-        m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
-        for (size_t i = 0; i < m_size; i++)
-            m_data[i] = other.m_data[i];
+    explicit vector(size_t n) noexcept : m_data(nullptr), m_capacity(0), m_size(0) {
+        if (n <= 0) return;
+        m_data     = static_cast<data_ptr>(::operator new(n * sizeof(data_t)));
+        m_capacity = n;
+        for (size_t i = 0; i < n; i++, m_size++)
+            new (&m_data[i]) data_t();
     }
-    vector& operator=(const vector& other) {
-        if (this != &other) {
-            m_capacity = N;
-            m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
-            for (size_t i = 0; i < m_size; i++)
-                m_data[i] = other.m_data[i];
+
+    vector(size_t n, data_const_ref val) noexcept : m_data(nullptr), m_size(0), m_capacity(0) {
+        if (n <= 0) return;
+
+        m_data     = static_cast<data_ptr>(::operator new(n * sizeof(T)));
+        m_capacity = n;
+        for (size_t i = 0; i < n; i++, m_size++)
+            new (&m_data[i]) data_t(val);
+    }
+
+    vector(std::initializer_list<T> list) noexcept : m_data(nullptr), m_size(0), m_capacity(0) {
+        if (list.size() <= 0) return;
+
+        m_data     = static_cast<data_ptr>(::operator new(list.size() * sizeof(data_t)));
+        m_capacity = list.size();
+        for (const auto& x : list) {
+            new (&m_data[m_size]) data_t(x);
+            m_size++;
         }
+    }
+
+    // copy constructor
+    vector(const vector& other) noexcept : m_data(nullptr), m_size(0), m_capacity(0) {
+        if (other.m_size <= 0) return;
+
+        m_data     = static_cast<data_ptr>(::operator new(other.m_capacity * sizeof(data_t)));
+        m_capacity = other.m_capacity;
+
+        for (size_t i = 0; i < other.m_size; ++i) {
+            new (&m_data[i]) data_t(other.m_data[i]);
+            ++m_size;
+        }
+    }
+
+    vector& operator=(const vector& other) {
+        if (this == &other) return *this;
+
+        deallocate();
+
+        m_size     = 0;
+        m_capacity = 0;
+
+        if (other.m_size == 0) return *this;
+
+        m_data     = static_cast<data_ptr>(::operator new(other.m_capacity * sizeof(data_t)));
+        m_capacity = other.m_capacity;
+        for (size_t i = 0; i < other.m_size; ++i) {
+            new (&m_data[i]) data_t(other.m_data[i]);
+            ++m_size;
+        }
+
         return *this;
     }
 
-    // move construction
-    vector(vector&& other) noexcept {
-        m_capacity = N;
-        m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
-        for (size_t i = 0; i < m_size; i++)
-            m_data[i] = move(other.m_data[i]);
-        other.m_size = 0;
+    // move constructor
+    vector(vector&& other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
+        other.m_data     = nullptr;
+        other.m_size     = 0;
+        other.m_capacity = 0;
     }
 
     vector& operator=(vector&& other) noexcept {
-        if (this == &other)
-            return *this;
+        if (this == &other) return *this;
 
-        this->clear();
+        deallocate();
 
-        m_capacity = N;
-        m_size     = (other.m_size > m_capacity) ? m_capacity : other.m_size;
-        for (size_t i = 0; i < m_size; i++)
-            m_data[i] = move(other.m_data[i]);
+        m_data     = other.m_data;
+        m_size     = other.m_size;
+        m_capacity = other.m_capacity;
 
-        other.m_size = 0;
+        other.m_data     = nullptr;
+        other.m_size     = 0;
+        other.m_capacity = 0;
+
         return *this;
     }
 
-    // destruction
-    virtual ~vector() {
-        for (size_t i = 0; i < m_size; i++) {
-            m_data[i].~data_t();
-        }
+    data_ref operator[](size_t n) { return m_data[n]; }
+    data_const_ref operator[](size_t n) const { return m_data[n]; }
+
+    data_ref at(size_t n) { return m_data[(n < m_size) ? n : 0]; }
+    data_const_ref at(size_t n) const { return m_data[(n < m_size) ? n : 0]; }
+
+    data_ptr data() noexcept { return m_data; }
+    data_const_ptr data() const noexcept { return m_data; }
+
+    msd::iterator<data_t> begin() noexcept { return msd::iterator<data_t>(m_data); }
+    msd::iterator<data_t> end() noexcept { return msd::iterator<data_t>(m_data + m_size); }
+
+    size_t size() noexcept { return m_size; }
+    size_t capacity() noexcept { return m_capacity; }
+    bool empty() noexcept { return m_size == 0; }
+    void reserve(size_t n_cap) {
+        if (n_cap <= m_capacity) return;
+        reallocate(n_cap);
     }
-
-    // access
-    const data_t& at(size_t index) const { return m_data[index >= m_size ? 0 : index]; }
-    data_t& at(size_t index) { return m_data[index >= m_size ? 0 : index]; }
-    const data_t& operator[](size_t index) const { return at(index); }
-    data_t& operator[](size_t index) { return at(index); }
-
-    // iterator
-    iterator<data_t> begin() noexcept { return iterator<data_t>{ m_data }; }
-    iterator<data_t> end() noexcept { return iterator<data_t>{ m_data + m_size }; }
-
-    // raw data
-    data_t* data() noexcept { return m_data; }
-    const data_t* data() const noexcept { return m_data; }
-
-    // size
-    size_t size() const noexcept { return m_size; }
-    size_t capacity() const noexcept { return m_capacity; }
-    bool empty() const noexcept { return m_size == 0; }
 
     void clear() noexcept {
         for (size_t i = 0; i < m_size; i++)
@@ -102,20 +160,41 @@ class vector {
         m_size = 0;
     }
 
-    // control
-    void pop_back() {
-        if (empty()) return;
-        m_data[m_size - 1].~data_t();
-        m_size--;
+    void push_back(data_const_ref value) {
+        if (m_size >= m_capacity)
+            reserve((m_capacity == 0) ? 16 : m_capacity * 2);
+
+        new (&m_data[m_size]) data_t(value);
+        m_size++;
     }
 
-    void push_back(const data_t& val) {
-        if (m_size == m_capacity) return;
-        m_data[m_size++] = val;
+    void push_back(T&& value) {
+        if (m_size >= m_capacity)
+            reserve((m_capacity == 0) ? 16 : m_capacity * 2);
+
+        new (&m_data[m_size]) data_t(msd::move(value));
+        m_size++;
     }
-    void push_back(data_t&& val) {
-        if (m_size == m_capacity) return;
-        m_data[m_size++] = msd::move(val);
+
+    template <typename... Args>
+    data_ref emplace_back(Args&&... args) {
+        if (m_size >= m_capacity)
+            reserve((m_capacity == 0) ? 16 : m_capacity * 2);
+
+        new (&m_data[m_size]) data_t(msd::forward<Args>(args)...);
+        return m_data[m_size++];
+    }
+
+    void swap(vector& other) noexcept {
+        msd::swap(m_data, other.m_data);
+        msd::swap(m_size, other.m_size);
+        msd::swap(m_capacity, other.m_capacity);
     }
 };
+
+template <typename T>
+void swap(vector<T>& lhs, vector<T>& rhs) noexcept {
+    lhs.swap(rhs);
+}
+
 } // namespace msd
