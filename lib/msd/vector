@@ -19,8 +19,8 @@ class vector {
 
     private:
     data_ptr m_data;
-    size_t m_capacity;
     size_t m_size;
+    size_t m_capacity;
 
     void deallocate() {
         if (m_data == nullptr) return;
