@@ -14,8 +14,19 @@ template <typename T> struct remove_reference<T&&> {
 };
 template <typename T> using remove_reference_t = typename remove_reference<T>::type;
 
+/// @brief void_t, use to raise an error when not capable
+template <typename...> using void_t = void;
+
+/// @brief add r-value reference to a type
+template <typename T> struct add_rvalue_reference {
+    using type = T&&;
+};
+
+template <typename T> typename add_rvalue_reference<T>::type declval() noexcept;
+
 /// @brief remove CV
-template <typename T> struct remove_cv {
+template <typename T>
+struct remove_cv {
     using type = T;
 };
 template <typename T> struct remove_cv<const T> {
@@ -60,21 +71,20 @@ using false_type = constant<bool, false>;
 
 /// @brief conjunction
 template <typename...> struct conjunction : public true_type {};
-template <typename B1> struct conjunction<B1> : B1 {};
-template <typename B1, typename... Bn> struct conjunction<B1, Bn...> : conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
-template <typename... Bn> inline constexpr bool conjunction_v = conjunction<Bn...>::value;
+template <typename Con1> struct conjunction<Con1> : Con1 {};
+template <typename Con1, typename... ConN> struct conjunction<Con1, ConN...> : conditional_t<bool(Con1::value), conjunction<ConN...>, Con1> {};
+// template <typename... ConN> inline constexpr bool conjunction_v = conjunction<ConN...>::value;
 
 /// @brief disjunction
 template <typename...> struct disjunction : public false_type {};
-template <typename B1> struct disjunction<B1> : B1 {};
-template <typename B1, typename... Bn> struct disjunction<B1, Bn...> : conditional_t<bool(B1::value), B1, disjunction<Bn...>> {};
-template <typename... Bn> inline constexpr bool disjunction_v = disjunction<Bn...>::value;
+template <typename Con1> struct disjunction<Con1> : Con1 {};
+template <typename Con1, typename... ConN> struct disjunction<Con1, ConN...> : conditional_t<bool(Con1::value), Con1, disjunction<ConN...>> {};
+// template <typename... ConN> inline constexpr bool disjunction_v = disjunction<ConN...>::value;
 
 /// @brief negation
 template <typename B> struct negation : constant<bool, !bool(B::value)> {};
-template <typename B> inline constexpr bool negation_v = negation<B>::value;
+// template <typename B> inline constexpr bool negation_v = negation<B>::value;
 
-/// @brief is integer
 namespace __details {
 template <typename T> struct is_integral_impl : public false_type {};
 template <> struct is_integral_impl<bool> : public true_type {};
@@ -93,30 +103,61 @@ template <> struct is_integral_impl<unsigned long> : public true_type {};
 template <> struct is_integral_impl<long long> : public true_type {};
 template <> struct is_integral_impl<unsigned long long> : public true_type {};
 } // namespace __details
+/// is integer
 template <typename T> struct is_integral : public __details::is_integral_impl<remove_cv_t<T>> {};
-template <typename T> inline constexpr bool is_integral_v = is_integral<T>::value;
+// template <typename T> inline constexpr bool is_integral_v = is_integral<T>::value;
 
-/// @brief is bool
+
 namespace __details {
 template <typename T> struct is_bool_impl : public false_type {};
 template <> struct is_bool_impl<bool> : public true_type {};
 } // namespace __details
+/// is bool
 template <typename T> struct is_bool : public __details::is_bool_impl<remove_cv_t<T>> {};
-template <typename T> inline constexpr bool is_bool_v = is_bool<T>::value;
+// template <typename T> inline constexpr bool is_bool_v = is_bool<T>::value;
 
-/// @brief is floating point
+
 namespace __details {
 template <typename T> struct is_floating_point_impl : public false_type {};
 template <> struct is_floating_point_impl<float> : public true_type {};
 template <> struct is_floating_point_impl<double> : public true_type {};
 template <> struct is_floating_point_impl<long double> : public true_type {};
 } // namespace __details
+/// is floating point
 template <typename T> struct is_floating_point : public __details::is_floating_point_impl<remove_cv_t<T>> {};
-template <typename T> inline constexpr bool is_floating_point_v = is_floating_point<T>::value;
+// template <typename T> inline constexpr bool is_floating_point_v = is_floating_point<T>::value;
 
-/// @brief is same
+
+/// is same
 template <typename T, typename U> struct is_same : false_type {};
 template <typename T> struct is_same<T, T> : true_type {};
-template <typename T, typename U> inline constexpr bool is_same_v = is_same<T, U>::value;
+// template <typename T, typename U> inline constexpr bool is_same_v = is_same<T, U>::value;
+
+
+namespace __details {
+template <typename T, typename = void> struct is_move_constructible_impl : false_type {};
+template <typename T> struct is_move_constructible_impl<T, void_t<decltype(T(declval<T&&>()))>> : true_type {};
+template <typename T, typename = void> struct is_nothrow_move_constructible_impl : false_type {};
+template <typename T> struct is_nothrow_move_constructible_impl<T, void_t<decltype(T(declval<T&&>()))>> {
+    static constexpr bool value = noexcept(T(declval<T&&>()));
+};
+
+
+template <typename T, typename = void> struct is_move_assignable_impl : false_type {};
+template <typename T> struct is_move_assignable_impl<T, void_t<decltype((declval<T&>() = declval<T&&>()))>> : true_type {};
+template <typename T, typename = void> struct is_nothrow_move_assignable_impl : false_type {};
+template <typename T> struct is_nothrow_move_assignable_impl<T, void_t<decltype(declval<T&>() = declval<T&&>())>> {
+    static constexpr bool value = noexcept(declval<T&>() = declval<T&&>());
+};
+} // namespace __details
+/// is move constructible
+template <typename T> struct is_move_constructible : __details::is_move_constructible_impl<T> {};
+/// is move and no-throw constructible
+template <typename T> struct is_nothrow_move_constructible : __details::is_nothrow_move_constructible_impl<T> {};
+/// is move assignable
+template <typename T> struct is_move_assignable : __details::is_move_assignable_impl<T> {};
+/// is move and no-throw assignable
+template <typename T> struct is_nothrow_move_assignable : __details::is_nothrow_move_assignable_impl<T> {};
+
 
 } // namespace msd

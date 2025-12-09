@@ -20,4 +20,13 @@ constexpr typename remove_reference<T>::type&& move(T&& val) noexcept {
     return static_cast<typename remove_reference<T>::type&&>(val);
 }
 
+// swap
+template <typename T>
+static void swap(T& a, T& b) {
+    T t = msd::move(a);
+    a   = msd::move(b);
+    b   = msd::move(t);
+}
+
+
 } // namespace msd

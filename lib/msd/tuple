@@ -13,13 +13,13 @@ namespace msd {
 template <typename... Tn> class tuple;
 
 namespace __details {
-template <size_t I, typename... Tn>
-class tuple_impl;
 
-/// @brief tuple impl for recursion
-/// @tparam T1 first argument
-/// @tparam ...Tn rest arguments
-/// @tparam I `I` th layer
+template <size_t I, typename... Tn> class tuple_impl;
+
+/// @brief Tuple implementation using recursive inheritance
+/// @tparam I Index of current layer
+/// @tparam T1 Type of element in this layer
+/// @tparam Tn Remaining element types
 template <size_t I, typename T1, typename... Tn>
 class tuple_impl<I, T1, Tn...> : public tuple_impl<I + 1, Tn...> {
     using Base = tuple_impl<I + 1, Tn...>;
@@ -79,7 +79,32 @@ constexpr T1& get_helper(tuple_impl<I, T1, Tn...>& t) noexcept { return t.get_va
 
 template <size_t I, typename T1, typename... Tn>
 constexpr const T1& get_helper(const tuple_impl<I, T1, Tn...>& t) noexcept { return t.get_val(); }
+
+template <size_t I, typename T1, typename... Tn>
+constexpr T1&& get_helper(tuple_impl<I, T1, Tn...>&& t) noexcept { return static_cast<T1&&>(t.get_val()); }
+
+
 } // namespace __details
+
+
+template <size_t I, typename T> struct tuple_element;
+namespace __details {
+template <size_t I, typename T1, typename... Tn> struct tuple_element_impl {
+    using type = typename tuple_element_impl<I - 1, Tn...>::type;
+};
+template <typename T1, typename... Tn> struct tuple_element_impl<0, T1, Tn...> {
+    using type = T1;
+};
+} // namespace __details
+
+template <size_t I, typename... Tn> struct tuple_element<I, tuple<Tn...>> {
+    using type = typename __details::tuple_element_impl<I, Tn...>::type;
+};
+template <size_t I, typename... Tn> struct tuple_element<I, const tuple<Tn...>> {
+    using type = const typename __details::tuple_element_impl<I, Tn...>::type;
+};
+template <size_t I, typename T> using tuple_element_t = typename tuple_element<I, T>::type;
+
 
 template <typename... Tn>
 class tuple : public __details::tuple_impl<0, Tn...> {
@@ -98,14 +123,26 @@ class tuple : public __details::tuple_impl<0, Tn...> {
     tuple& operator=(tuple&&) = default;
 
     // perfect forward constructor
-    template <typename U1, typename... Un, typename = typename enable_if< !is_same< typename remove_cv<typename remove_reference<U1>::type>::type, tuple>::value > ::type >
+    template <typename U1, typename... Un, typename = typename enable_if<!is_same<typename remove_cv<typename remove_reference<U1>::type>::type, tuple>::value>::type>
     explicit tuple(U1&& u1, Un&&... un) noexcept : Base(msd::forward<U1>(u1), msd::forward<Un>(un)...) {}
 };
+template <size_t I, typename... Tn>
+constexpr typename tuple_element<I, tuple<Tn...>>::type&
+get(tuple<Tn...>& t) noexcept {
+    return __details::get_helper<I>(t);
+}
 
 template <size_t I, typename... Tn>
-constexpr auto& get(tuple<Tn...>& t) noexcept { return __details::get_helper<I>(t); }
+constexpr const typename tuple_element<I, tuple<Tn...>>::type&
+get(const tuple<Tn...>& t) noexcept {
+    return __details::get_helper<I>(t);
+}
+
 template <size_t I, typename... Tn>
-constexpr const auto& get(const tuple<Tn...>& t) noexcept { return __details::get_helper<I>(t); }
+constexpr typename tuple_element<I, tuple<Tn...>>::type&&
+get(tuple<Tn...>&& t) noexcept {
+    return __details::get_helper<I>(msd::move(t));
+}
 
 /// @brief make tuple, create a tuple by args
 /// @tparam ...Tn may not need to input, it is types of the args
@@ -123,5 +160,26 @@ template <typename... Tn> struct tuple_size<tuple<Tn...>> {
     static constexpr size_t value = sizeof...(Tn);
 };
 
-
 } // namespace msd
+namespace std {
+
+template <typename T>
+struct tuple_size;
+
+template <size_t I, typename T>
+struct tuple_element;
+
+template <typename... Tn> struct tuple_size<msd::tuple<Tn...>> : msd::constant<size_t, sizeof...(Tn)> {};
+
+template <typename... Tn> struct tuple_size<const msd::tuple<Tn...>> : msd::constant<size_t, sizeof...(Tn)> {};
+
+template <size_t I, typename... Tn> struct tuple_element<I, msd::tuple<Tn...>> {
+    using type = typename msd::tuple_element<I, msd::tuple<Tn...>>::type;
+};
+
+template <size_t I, typename... Tn>
+struct tuple_element<I, const msd::tuple<Tn...>> {
+    using type = typename msd::tuple_element<I, const msd::tuple<Tn...>>::type;
+};
+
+} // namespace std

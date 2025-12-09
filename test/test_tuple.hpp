@@ -273,6 +273,15 @@ void test_tuple_sensor_data() {
     TEST_ASSERT_EQUAL_UINT32(1234567890UL, msd::get<3>(data));
 }
 
+void test_tuple_structure_bind() {
+    auto func = []() {
+        return msd::make_tuple(10, 20);
+    };
+    auto [a, b] = func();
+    TEST_ASSERT_EQUAL(10, a);
+    TEST_ASSERT_EQUAL(20, b);
+}
+
 void test_tuple() {
     UNITY_BEGIN();
 
@@ -316,6 +325,8 @@ void test_tuple() {
     // 实际场景
     RUN_TEST(test_tuple_as_return_value);
     RUN_TEST(test_tuple_sensor_data);
+
+    RUN_TEST(test_tuple_structure_bind);
 
     UNITY_END();
 }

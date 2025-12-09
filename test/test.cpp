@@ -1,6 +1,8 @@
 #include <unity.h>
 
+#include "test_move.hpp"
 #include "test_tuple.hpp"
+#include "test_type_trait.hpp"
 
 void test_array_basic();
 void test_array_access();
@@ -81,7 +83,16 @@ int main() {
     RUN_TEST(test_multiple_allocations);
     RUN_TEST(test_zero_size_allocation);
 
+    RUN_TEST(test_remove_reference);
+    RUN_TEST(test_move_basic_types);
+    RUN_TEST(test_move_custom_class);
+    RUN_TEST(test_forward_function);
+    RUN_TEST(test_swap_basic_types);
+    RUN_TEST(test_swap_custom_class);
+    RUN_TEST(test_swap_array);
+
     UNITY_END();
 
     test_tuple();
+    test_type_traits();
 }
