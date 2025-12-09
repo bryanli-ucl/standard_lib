@@ -4,14 +4,117 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <tuple>
+
 namespace msd {
 namespace literals {
-struct Seconds {
-    double value;
+/*
+ * M L T means the power of each unit
+ * M := mass
+ * L := length
+ * T := time
+ * Example:
+ * <0, 0, 1> = s
+ * <0, 1, -1> = m/s
+ */
+template <int M, int L, int T>
+struct Quantity {
+    double v;
+    static constexpr msd::tuple<int, int, int> dim() { return msd::make_tuple(M, L, T); }
+    constexpr Quantity(double v) : v(v) {}
 };
-constexpr auto operator""_s(double value) -> Seconds {
-    return Seconds{ .value = value };
-}
-} // namespace literals
 
+using Dimensionless = Quantity<0, 0, 0>;
+
+using Kilograms = Quantity<1, 0, 0>; // kg
+using Metres    = Quantity<0, 1, 0>; // m
+using Seconds   = Quantity<0, 0, 1>; // s
+
+using Velocity     = Quantity<0, 1, -1>; // m/s
+using Acceleration = Quantity<0, 1, -2>; // m/s^2
+using Jerk         = Quantity<0, 1, -3>; // m/s^3
+
+using Force  = Quantity<1, 1, -2>; // kg*m/s^2 (Newton)
+using Energy = Quantity<1, 2, -2>; // kg*m^2/s^2 (Joule)
+using Power  = Quantity<1, 2, -3>; // kg*m^2/s^3 (Watt)
+
+/// * /
+template <int M1, int L1, int T1, int M2, int L2, int T2>
+constexpr auto operator*(Quantity<M1, L1, T1> lhs, Quantity<M2, L2, T2> rhs) -> Quantity<M1 + M2, L1 + L2, T1 + T2> {
+    return Quantity<M1 + M2, L1 + L2, T1 + T2>(lhs.v * rhs.v);
+}
+template <int M1, int L1, int T1, int M2, int L2, int T2>
+constexpr auto operator/(Quantity<M1, L1, T1> lhs, Quantity<M2, L2, T2> rhs) -> Quantity<M1 - M2, L1 - L2, T1 - T2> {
+    return Quantity<M1 - M2, L1 - L2, T1 - T2>(lhs.v / rhs.v);
+}
+
+/// + -
+template <int M, int L, int T>
+constexpr auto operator+(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> Quantity<M, L, T> {
+    return Quantity<M, L, T>(lhs.v + rhs.v);
+}
+template <int M, int L, int T>
+constexpr auto operator-(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> Quantity<M, L, T> {
+    return Quantity<M, L, T>(lhs.v - rhs.v);
+}
+
+/// * / c
+template <int M, int L, int T>
+constexpr auto operator*(Quantity<M, L, T> lhs, double rhs) -> Quantity<M, L, T> {
+    return Quantity<M, L, T>(lhs.v * rhs);
+}
+template <int M, int L, int T>
+constexpr auto operator/(Quantity<M, L, T> lhs, double rhs) -> Quantity<M, L, T> {
+    return Quantity<M, L, T>(lhs.v / rhs);
+}
+
+/// time
+constexpr auto operator""_s(long double value) -> Seconds { return Seconds(static_cast<double>(value)); }
+constexpr auto operator""_ms(long double value) -> Seconds { return Seconds(static_cast<double>(value) / 1000.); }
+constexpr auto operator""_us(long double value) -> Seconds { return Seconds(static_cast<double>(value)) / 1000000.; }
+constexpr auto operator""_s(unsigned long long value) -> Seconds { return Seconds(static_cast<double>(value)); }
+constexpr auto operator""_ms(unsigned long long value) -> Seconds { return Seconds(static_cast<double>(value) / 1000.); }
+constexpr auto operator""_us(unsigned long long value) -> Seconds { return Seconds(static_cast<double>(value)) / 1000000.; }
+
+/// mass
+constexpr auto operator""_kg(long double value) -> Kilograms { return Kilograms(static_cast<double>(value)); }
+constexpr auto operator""_g(long double value) -> Kilograms { return Kilograms(static_cast<double>(value) / 1000.); }
+constexpr auto operator""_kg(unsigned long long value) -> Kilograms { return Kilograms(static_cast<double>(value)); }
+constexpr auto operator""_g(unsigned long long value) -> Kilograms { return Kilograms(static_cast<double>(value) / 1000.); }
+
+/// distance
+constexpr auto operator""_km(long double value) -> Metres { return Metres(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_m(long double value) -> Metres { return Metres(static_cast<double>(value)); }
+constexpr auto operator""_mm(long double value) -> Metres { return Metres(static_cast<double>(value)) / 1000; }
+constexpr auto operator""_km(unsigned long long value) -> Metres { return Metres(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_m(unsigned long long value) -> Metres { return Metres(static_cast<double>(value)); }
+constexpr auto operator""_mm(unsigned long long value) -> Metres { return Metres(static_cast<double>(value)) / 1000; }
+
+/// Newton
+constexpr auto operator""_kN(long double value) -> Force { return Force(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_N(long double value) -> Force { return Force(static_cast<double>(value)); }
+constexpr auto operator""_mN(long double value) -> Force { return Force(static_cast<double>(value)) / 1000; }
+constexpr auto operator""_kN(unsigned long long value) -> Force { return Force(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_N(unsigned long long value) -> Force { return Force(static_cast<double>(value)); }
+constexpr auto operator""_mN(unsigned long long value) -> Force { return Force(static_cast<double>(value)) / 1000; }
+
+/// Energy
+constexpr auto operator""_kJ(long double value) -> Energy { return Energy(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_J(long double value) -> Energy { return Energy(static_cast<double>(value)); }
+constexpr auto operator""_mJ(long double value) -> Energy { return Energy(static_cast<double>(value)) / 1000; }
+constexpr auto operator""_kJ(unsigned long long value) -> Energy { return Energy(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_J(unsigned long long value) -> Energy { return Energy(static_cast<double>(value)); }
+constexpr auto operator""_mJ(unsigned long long value) -> Energy { return Energy(static_cast<double>(value)) / 1000; }
+
+
+/// Power
+constexpr auto operator""_kW(long double value) -> Power { return Power(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_W(long double value) -> Power { return Power(static_cast<double>(value)); }
+constexpr auto operator""_mW(long double value) -> Power { return Power(static_cast<double>(value)) / 1000; }
+constexpr auto operator""_kW(unsigned long long value) -> Power { return Power(static_cast<double>(value)) * 1000; }
+constexpr auto operator""_W(unsigned long long value) -> Power { return Power(static_cast<double>(value)); }
+constexpr auto operator""_mW(unsigned long long value) -> Power { return Power(static_cast<double>(value)) / 1000; }
+
+
+} // namespace literals
 } // namespace msd

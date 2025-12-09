@@ -19,8 +19,8 @@ class vector {
 
     private:
     data_ptr m_data;
-    size_t m_size;
     size_t m_capacity;
+    size_t m_size;
 
     void deallocate() {
         if (m_data == nullptr) return;
@@ -58,7 +58,7 @@ class vector {
             new (&m_data[i]) data_t();
     }
 
-    vector(size_t n, data_const_ref val) noexcept : m_data(nullptr), m_size(0), m_capacity(0) {
+    vector(size_t n, data_const_ref val) noexcept : m_data(nullptr), m_capacity(0), m_size(0) {
         if (n <= 0) return;
 
         m_data     = static_cast<data_ptr>(::operator new(n * sizeof(T)));
@@ -67,7 +67,7 @@ class vector {
             new (&m_data[i]) data_t(val);
     }
 
-    vector(std::initializer_list<T> list) noexcept : m_data(nullptr), m_size(0), m_capacity(0) {
+    vector(std::initializer_list<T> list) noexcept : m_data(nullptr), m_capacity(0), m_size(0) {
         if (list.size() <= 0) return;
 
         m_data     = static_cast<data_ptr>(::operator new(list.size() * sizeof(data_t)));
@@ -79,7 +79,7 @@ class vector {
     }
 
     // copy constructor
-    vector(const vector& other) noexcept : m_data(nullptr), m_size(0), m_capacity(0) {
+    vector(const vector& other) noexcept : m_data(nullptr), m_capacity(0), m_size(0) {
         if (other.m_size <= 0) return;
 
         m_data     = static_cast<data_ptr>(::operator new(other.m_capacity * sizeof(data_t)));
@@ -112,7 +112,7 @@ class vector {
     }
 
     // move constructor
-    vector(vector&& other) noexcept : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
+    vector(vector&& other) noexcept : m_data(other.m_data), m_capacity(other.m_capacity), m_size(other.m_size) {
         other.m_data     = nullptr;
         other.m_size     = 0;
         other.m_capacity = 0;
