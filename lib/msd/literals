@@ -1,8 +1,6 @@
 #pragma once
 
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 
 #include <tuple>
 
@@ -21,14 +19,14 @@ template <int M, int L, int T>
 struct Quantity {
     double v;
     static constexpr msd::tuple<int, int, int> dim() { return msd::make_tuple(M, L, T); }
-    constexpr Quantity(double v) : v(v) {}
+    explicit constexpr Quantity(double v) : v(v) {}
 };
 
 using Dimensionless = Quantity<0, 0, 0>;
 
-using Kilograms = Quantity<1, 0, 0>; // kg
-using Metres    = Quantity<0, 1, 0>; // m
-using Seconds   = Quantity<0, 0, 1>; // s
+using Kilograms = Quantity<1, 0, 0>; // kilogram
+using Metres    = Quantity<0, 1, 0>; // metre
+using Seconds   = Quantity<0, 0, 1>; // second
 
 using Velocity     = Quantity<0, 1, -1>; // m/s
 using Acceleration = Quantity<0, 1, -2>; // m/s^2
@@ -58,7 +56,7 @@ constexpr auto operator-(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> Quanti
     return Quantity<M, L, T>(lhs.v - rhs.v);
 }
 
-/// * / c
+/// * / scalar
 template <int M, int L, int T>
 constexpr auto operator*(Quantity<M, L, T> lhs, double rhs) -> Quantity<M, L, T> {
     return Quantity<M, L, T>(lhs.v * rhs);
@@ -66,6 +64,31 @@ constexpr auto operator*(Quantity<M, L, T> lhs, double rhs) -> Quantity<M, L, T>
 template <int M, int L, int T>
 constexpr auto operator/(Quantity<M, L, T> lhs, double rhs) -> Quantity<M, L, T> {
     return Quantity<M, L, T>(lhs.v / rhs);
+}
+
+template <int M, int L, int T>
+constexpr auto operator==(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> bool {
+    return lhs.v == rhs.v;
+}
+template <int M, int L, int T>
+constexpr auto operator!=(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> bool {
+    return lhs.v != rhs.v;
+}
+template <int M, int L, int T>
+constexpr auto operator<(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> bool {
+    return lhs.v < rhs.v;
+}
+template <int M, int L, int T>
+constexpr auto operator>(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> bool {
+    return lhs.v > rhs.v;
+}
+template <int M, int L, int T>
+constexpr auto operator<=(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> bool {
+    return lhs.v <= rhs.v;
+}
+template <int M, int L, int T>
+constexpr auto operator>=(Quantity<M, L, T> lhs, Quantity<M, L, T> rhs) -> bool {
+    return lhs.v >= rhs.v;
 }
 
 /// time
@@ -105,7 +128,6 @@ constexpr auto operator""_mJ(long double value) -> Energy { return Energy(static
 constexpr auto operator""_kJ(unsigned long long value) -> Energy { return Energy(static_cast<double>(value)) * 1000; }
 constexpr auto operator""_J(unsigned long long value) -> Energy { return Energy(static_cast<double>(value)); }
 constexpr auto operator""_mJ(unsigned long long value) -> Energy { return Energy(static_cast<double>(value)) / 1000; }
-
 
 /// Power
 constexpr auto operator""_kW(long double value) -> Power { return Power(static_cast<double>(value)) * 1000; }

@@ -79,7 +79,6 @@ template <typename T> struct enable_if<true, T> {
 };
 template <bool C, typename T = void> using enable_if_t = typename enable_if<C, T>::type;
 
-
 /// @brief constant value
 template <typename T, T Val>
 struct constant {
@@ -90,12 +89,12 @@ struct constant {
 };
 
 
-/// ======================= Logic constant
+/// ======================= Logic constant ===========================
 using true_type  = constant<bool, true>;
 using false_type = constant<bool, false>;
 
 
-/// ======================= Logic evaluator
+/// ======================= Logic evaluator ===========================
 /// @brief conditional
 template <bool B, typename T, typename F> struct conditional {
     using type = T;
@@ -122,7 +121,7 @@ template <typename B> struct negation : constant<bool, !bool(B::value)> {};
 // template <typename B> inline constexpr bool negation_v = negation<B>::value;
 
 
-/// ======================= is integer
+/// ======================= is integer ===========================
 namespace __details {
 template <typename T> struct is_integral_impl : public false_type {};
 template <> struct is_integral_impl<bool> : public true_type {};
@@ -145,7 +144,7 @@ template <typename T> struct is_integral : public __details::is_integral_impl<re
 // template <typename T> inline constexpr bool is_integral_v = is_integral<T>::value;
 
 
-/// ======================= is bool
+/// ======================= is bool ===========================
 namespace __details {
 template <typename T> struct is_bool_impl : public false_type {};
 template <> struct is_bool_impl<bool> : public true_type {};
@@ -154,7 +153,7 @@ template <typename T> struct is_bool : public __details::is_bool_impl<remove_cv_
 // template <typename T> inline constexpr bool is_bool_v = is_bool<T>::value;
 
 
-/// ======================= is floating point
+/// ======================= is floating point ===========================
 namespace __details {
 template <typename T> struct is_floating_point_impl : public false_type {};
 template <> struct is_floating_point_impl<float> : public true_type {};
@@ -165,7 +164,7 @@ template <typename T> struct is_floating_point : public __details::is_floating_p
 // template <typename T> inline constexpr bool is_floating_point_v = is_floating_point<T>::value;
 
 
-/// ======================= is array
+/// ======================= is array ===========================
 namespace __details {
 template <typename T> struct is_array_impl : public false_type {};
 template <typename T> struct is_array_impl<T[]> : public true_type {};
@@ -174,7 +173,7 @@ template <typename T, size_t N> struct is_array_impl<T[N]> : public true_type {}
 template <typename T> struct is_array : public __details::is_array_impl<T> {};
 
 
-/// ======================= is function
+/// ======================= is function ===========================
 namespace __details {
 template <typename T> struct is_function_impl : public false_type {};
 template <typename Ret, typename... Args> struct is_function_impl<Ret(Args...)> : public true_type {};
@@ -183,13 +182,32 @@ template <typename Ret, typename... Args> struct is_function_impl<Ret(Args..., .
 template <typename T> struct is_function : public __details::is_function_impl<T> {};
 
 
-/// ======================= is same
+/// ======================= is same ===========================
 template <typename T, typename U> struct is_same : false_type {};
 template <typename T> struct is_same<T, T> : true_type {};
 // template <typename T, typename U> inline constexpr bool is_same_v = is_same<T, U>::value;
 
 
-/// ======================= is movable
+/// ======================= decay ===========================
+template <typename T>
+struct decay {
+    private:
+    using no_ref     = msd::remove_reference_t<T>;
+    using no_ref_ext = msd::remove_extent_t<no_ref>;
+
+    public:
+    using type = msd::conditional_t<
+    /*Condition*/ msd::is_array<no_ref>::value,
+    /*TRUE*/ msd::add_pointer_t<no_ref_ext>,
+    /*FALSE*/ msd::conditional_t<
+    /*      Condition*/ msd::is_function<no_ref>::value,
+    /*      TRUE*/ msd::add_pointer_t<no_ref>,
+    /*      FALSE*/ msd::remove_cv_t<no_ref>>>;
+};
+template <typename T> using decay_t = typename decay<T>::type;
+
+
+/// ======================= is movable ===========================
 namespace __details {
 template <typename T, typename = void> struct is_move_constructible_impl : false_type {};
 template <typename T> struct is_move_constructible_impl<T, void_t<decltype(T(declval<T&&>()))>> : true_type {};
@@ -212,25 +230,6 @@ template <typename T> struct is_nothrow_move_constructible : __details::is_nothr
 template <typename T> struct is_move_assignable : __details::is_move_assignable_impl<T> {};
 /// is move and no-throw assignable
 template <typename T> struct is_nothrow_move_assignable : __details::is_nothrow_move_assignable_impl<T> {};
-
-
-template <typename T>
-struct decay {
-    private:
-    using no_ref     = msd::remove_reference_t<T>;
-    using no_ref_cv  = msd::remove_cv_t<no_ref>;
-    using no_ref_ext = msd::remove_extent_t<no_ref>;
-
-    public:
-    using type = msd::conditional_t<
-    msd::is_array<no_ref>::value,
-    msd::add_pointer_t<no_ref_ext>,
-    msd::conditional_t<
-    msd::is_function<no_ref>::value,
-    msd::add_pointer_t<no_ref>,
-    no_ref_cv>>;
-};
-template <typename T> using decay_t = typename decay<T>::type;
 
 
 } // namespace msd

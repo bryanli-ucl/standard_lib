@@ -1,9 +1,7 @@
-#include <Arduino.h>
-
-// #include <pair>
-// #include <vector>
-
+#include <arduino/hw.hpp>
 #include <literals>
+
+using namespace msd::literals;
 
 /*
 Memory region         Used Size  Region Size  %age Used
@@ -18,16 +16,12 @@ Memory region         Used Size  Region Size  %age Used
 RAM:   [=         ]   9.0% (used 184 bytes from 2048 bytes)
 Flash: [          ]   4.9% (used 1586 bytes from 32256 bytes)
 */
-void setup() {
-    Serial.begin(9600);
-    delay(300);
+void entry() {
 
-    // msd::vector<int> vec = { 1, 2, 3 };
-    // Serial.println(vec.size());
-    // Serial.println(vec.capacity());
-    // Serial.println(vec.at(0));
-    // Serial.println(vec.at(1));
-    // Serial.println(vec.at(2));
+    using firmware::pins;
+    using firmware::serial, firmware::wait;
+
+    serial.begin(9600);
 
     // RAM:   [=         ]  11.1% (used 228 bytes from 2048 bytes)
     // Flash: [=         ]  10.2% (used 3280 bytes from 32256 bytes)
@@ -38,21 +32,19 @@ void setup() {
         auto mass   = 1_kg;
         auto length = 1_m;
 
-        auto unknow = 1_s / 1_kg * 1_m * 1_m / 1_s;
-
         auto newton1   = 1_g * 1_km / (1_s * 1_s);
         auto newton2   = 1_N;
         auto [t, m, l] = newton1.dim();
 
-        Serial.println("===========================");
-        Serial.println(time.v);
-        Serial.println(mass.v);
-        Serial.println(length.v);
-        Serial.println(newton1.v, 20);
-        Serial.println(newton2.v, 20);
-        Serial.print(t);
-        Serial.print(m);
-        Serial.println(l);
+        serial.println("===========================");
+        serial.println(time.v);
+        serial.println(mass.v);
+        serial.println(length.v);
+        serial.println(newton1.v, 20);
+        serial.println(newton2.v, 20);
+        serial.print(t);
+        serial.print(m);
+        serial.println(l);
     }
 
     // RAM:   [=         ]  11.1% (used 228 bytes from 2048 bytes)
@@ -62,12 +54,18 @@ void setup() {
         double mass   = 1;
         double length = 1;
         double newton = 0.001;
-        Serial.println("===========================");
-        Serial.println(time);
-        Serial.println(mass);
-        Serial.println(length);
-        Serial.println(newton, 20);
+        serial.println("===========================");
+        serial.println(time);
+        serial.println(mass);
+        serial.println(length);
+        serial.println(newton, 20);
+    }
+
+    using LED = pins<13, firmware::PinMode::OUTPUT>;
+
+    while (true) {
+        // 3764 -> 3982 = 128 bytes
+        LED::dwrite(!LED ::dread());
+        wait(1_s);
     }
 }
-
-void loop() {}
