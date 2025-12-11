@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#include <singleton.hpp>
+#include <singleton>
 
 namespace avr {
 

@@ -2,6 +2,7 @@
 #include <literals>
 
 using namespace msd::literals;
+namespace fw = firmware;
 
 /*
 Memory region         Used Size  Region Size  %age Used
@@ -16,10 +17,31 @@ Memory region         Used Size  Region Size  %age Used
 RAM:   [=         ]   9.0% (used 184 bytes from 2048 bytes)
 Flash: [          ]   4.9% (used 1586 bytes from 32256 bytes)
 */
+
+void entry() {
+    using LED1 = fw::pins<13, fw::PinMode::OUTPUT>;
+    using LED2 = fw::pins<12, fw::PinMode::OUTPUT>;
+
+    // using fw::serial;
+    // serial.begin(9600);
+    // serial.println(sizeof(LED1));
+
+    using fw::logger;
+    auto& log = logger::instance();
+    log.init();
+    log.info("Hi");
+    log.info("Hi%d", 123);
+    log.info("Hi%s", "abc");
+    log.info("7355608");
+
+    LED1::dwrite(true);
+    LED2::dwrite(true);
+}
+
+/*
 void entry() {
 
-    using firmware::pins;
-    using firmware::serial, firmware::wait;
+    using fw::serial;
 
     serial.begin(9600);
 
@@ -39,7 +61,7 @@ void entry() {
         serial.println("===========================");
         serial.println(time.v);
         serial.println(mass.v);
-        serial.println(length.v);
+        serial.printlharacteristic polynomial and factorisationn(length.v);
         serial.println(newton1.v, 20);
         serial.println(newton2.v, 20);
         serial.print(t);
@@ -61,11 +83,15 @@ void entry() {
         serial.println(newton, 20);
     }
 
-    using LED = pins<13, firmware::PinMode::OUTPUT>;
+    // using LED = fw::pins<13, firmware::PinMode::OUTPUT>;
+    // LED::dwrite(!(LED::dread()));
 
     while (true) {
-        // 3764 -> 3982 = 128 bytes
-        LED::dwrite(!LED ::dread());
-        wait(1_s);
+        // 3526 -> 3838 = 128 bytes
+        // fw::wait(1_s);
+        // 3982 -> 4082 = 100 bytes
+        // LED::dwrite(!LED ::dread());
+        // fw::wait(1_s);
     }
 }
+*/
